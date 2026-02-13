@@ -1,0 +1,8 @@
+{
+  "projects": {
+    "default": "shared-roots-d2530",
+    "shared-roots-dev": "shared-roots-d2530"
+  },
+  "targets": {},
+  "etags": {}
+}
