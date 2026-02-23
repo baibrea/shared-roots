@@ -1,15 +1,15 @@
-// app/add-person/page.tsx
-'use client'; // Required for interactive state
+'use client';
 
 import { useState } from 'react';
 import { Person } from '@/types/person';
-import Link from 'next/link';
+import { usePeople } from "@/lib/PeopleContext";
+import { useRouter } from 'next/navigation';
+
 
 export default function AddPersonPage() {
-  // 1. Setup local state for a list of people
-  const [people, setPeople] = useState<Person[]>([]);
+  const { addPerson } = usePeople();
+  const router = useRouter();
 
-  // 2. Setup state for the form inputs
   const [formData, setFormData] = useState<Partial<Person>>({
     firstName: '',
     lastName: '',
@@ -27,8 +27,8 @@ export default function AddPersonPage() {
       id: crypto.randomUUID(), // Temp ID until Firebase provides one
     } as Person;
 
-    // Add to local list (in-memory only)
-    setPeople([...people, newPerson]);
+    addPerson(newPerson);
+    router.push("/familytree");
 
     // Reset form
     setFormData({ firstName: '', lastName: '', birthDate: '', birthLocation: '', title: '', bio: '', healthDetails: '' });
@@ -117,36 +117,14 @@ export default function AddPersonPage() {
         <button type="submit" className="bg-blue-500 text-white p-2">Add Person</button>
       </form>
 
-      <div className="mt-8">
+      {/* <div className="mt-8">
         <h2 className="text-xl font-bold  placeholder: text-black" >Local Family Tree Members:</h2>
         <ul>
           {people.map(p => <li key={p.id}>{p.firstName} {p.lastName} (Birth Date: {p.birthDate}) (Birth Location: {p.birthLocation}) (Title: {p.title}) (Bio: {p.bio})</li>)}
         </ul>
-      </div>
+      </div> */}
       </div>
       </div>
     </div>
   );
 }
-
-
-// 'use client'; // Required for client-side hooks like useState
-
-// import { SetStateAction, useState } from 'react';
-
-// export default function FamilyTree() {
-//   const [name, setName] = useState('');
-
-//    const handleChange = (event: { target: { value: SetStateAction<string>; }; }) => {
-//     setName(event.target.value);
-//   };
-
-//   return (
-//     // Pass the action function to the form's action prop
-//     <div className="flex flex-col items-center justify-center h-screen">
-//         <div><input type="text" value={name} onChange={handleChange} /></div>
-//         <div><button type="submit">Submit</button></div>
-//         <div>{name}</div>
-//     </div>
-//   );
-// }
