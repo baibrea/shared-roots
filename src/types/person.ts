@@ -6,8 +6,11 @@ export interface Person {
 
   birthDate?: string;
   birthLocation?: string;
+
   title?: string;
   bio?: string;
+  
+  healthDetails?: string;
 
   parentIds: string[];
   childIds: string[];
