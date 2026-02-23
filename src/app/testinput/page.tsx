@@ -15,8 +15,12 @@ export default function AddPersonPage() {
     lastName: '',
     birthDate: '',
     birthLocation: '',
+    title: '',
     bio: '',
+    healthDetails: '',
   });
+
+  const isFormValid = formData.firstName?.trim() && formData.lastName?.trim();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -47,6 +51,7 @@ export default function AddPersonPage() {
           Name
         </h2>
         <input 
+          required
           className="w-full border border-[#6E6E6E] rounded-3xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black bg-[#dde4dd]
                             placeholder: text-black"
           placeholder="First Name"
@@ -54,6 +59,7 @@ export default function AddPersonPage() {
           onChange={(e) => setFormData({...formData, firstName: e.target.value})}
         />
         <input 
+          required
           className="w-full border border-[#6E6E6E] rounded-3xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black bg-[#dde4dd]
                             placeholder: text-black"
           placeholder="Last Name"
@@ -87,11 +93,12 @@ export default function AddPersonPage() {
           Additional Information
         </h2>
         <input 
+          className="w-full border border-[#6E6E6E] rounded-3xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black bg-[#dde4dd]
+                            placeholder: text-black"
           placeholder="Title"
           value={formData.title}
           onChange={(e) => setFormData({...formData, title: e.target.value})}
-          className="w-full border border-[#6E6E6E] rounded-3xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black bg-[#dde4dd]
-                            placeholder: text-black"
+          
         />
         <textarea 
           placeholder="Bio"
@@ -114,7 +121,14 @@ export default function AddPersonPage() {
                             placeholder: text-black"
         />
         </div>
-        <button type="submit" className="bg-blue-500 text-white p-2">Add Person</button>
+        <button 
+          type="submit" 
+          disabled={!isFormValid}
+          className={`p-2 rounded-xl text-white transition
+            ${isFormValid ? "bg-blue-500 hover:bg-blue-600" : "bg-gray-400 cursor-not-allowed"}
+          `}>
+            Add Person
+        </button>
       </form>
 
       {/* <div className="mt-8">

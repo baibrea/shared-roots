@@ -13,7 +13,7 @@ export default function FamilyTreePage() {
 
       <ul className="space-y-4">
         {people.map((p) => (
-          <li key={p.id} className="p-4 bg-white rounded-xl shadow text-black">
+          <li key={p.id} className="p-4 bg-white rounded-xl shadow text-[#3A433A]">
             <strong>
               {p.firstName} {p.lastName}
             </strong>
