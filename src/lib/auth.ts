@@ -5,12 +5,14 @@ import { auth, db } from "./firebase";
 
 export async function registerUser(
     email: string,
-    password: string
+    password: string,
+    firstName: string,
+    lastName: string
 ): Promise<User> {
     const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
-        password
+        password,
     );
 
     const user = userCredential.user;
@@ -18,7 +20,8 @@ export async function registerUser(
     await setDoc(doc(db, "users", user.uid), {
         uid: user.uid,
         email: user.email,
-        name,
+        firstName,
+        lastName,
         createdAt: new Date(),
         role: "user",
     });

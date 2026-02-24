@@ -1,4 +1,4 @@
-export default function Login() {
+export default function FamilyTree() {
     return (
         <div>
             <h1>This is the family tree!!!!!! yay!!!</h1>
