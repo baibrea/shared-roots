@@ -13,7 +13,8 @@ export async function createFamily(
     const family = await addDoc(collection(db, "families"), {
         familyName,
         createdAt: new Date(),
-        owner: firstName + " " + lastName
+        owner: firstName + " " + lastName,
+        ownerID: uid
     });
 
     // Creates a subcollection "members" and creates a user document

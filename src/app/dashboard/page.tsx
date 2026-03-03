@@ -26,6 +26,11 @@ export default function Dashboard() {
     const [userID, setUserID] = useState("");
     const [inputText, setInputText] = useState("");
 
+    // Family Booleans
+    const [familyCreated, setFamilyCreated] = useState(false);
+    const [familyJoined, setFamilyJoined] = useState(false);
+    const [familyJoinFailed, setFamilyJoinFailed] = useState(false);
+
     // Router for redirecting
     const router = useRouter();
 
@@ -59,6 +64,25 @@ export default function Dashboard() {
           priority
         />
         <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
+
+          {/*Conditional Family creation/join success/fail messages*/}
+          {familyCreated && (
+            <p className="bg-green-200 text-green-800 p-2 rounded mb-4">
+              <b>{inputText} Family created successfully!</b>
+            </p>
+          )}
+          {familyJoined && (
+            <p className="bg-green-200 text-green-800 p-2 rounded mb-4">
+              <b>{inputText} Family joined successfully!</b>
+            </p>
+          )}
+          {familyJoinFailed && (
+            <p className="bg-red-200 text-red-800 p-2 rounded mb-4">
+              <b>Failed to join {inputText} family.</b>
+            </p>
+          )}
+          {/*End Conditional Family Messages*/}
+
           <h1 className="max-w-s text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
             Welcome to Shared Roots.
           </h1>
@@ -114,7 +138,16 @@ export default function Dashboard() {
           <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
             <button
               className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-              onClick={() => console.log("Create:", inputText)}
+              onClick={async () => {
+                try {
+                  const family = await createFamily(inputText, firstName, lastName, userID);
+                  console.log("Succesfully joined family:", inputText);
+                  setFamilyCreated(true);
+                } catch (error) {
+                  console.error("Failed to create family:", error);
+                  setFamilyCreated(false);
+                }
+              }}
             >
               Create Family
             </button>
@@ -124,8 +157,12 @@ export default function Dashboard() {
                 try {
                   await joinFamily(inputText, firstName, lastName, userID);
                   console.log("Successfully joined family:", inputText);
+                  setFamilyJoined(true);
+                  setFamilyJoinFailed(false);
                 } catch (error) {
                   console.error("Failed to join family:", error);
+                  setFamilyJoinFailed(true);
+                  setFamilyJoined(false);
                 }
               }}
             >
