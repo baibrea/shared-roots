@@ -7,6 +7,7 @@ import { onAuthStateChanged, signOut } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { auth, db } from "@/lib/firebase";
+import { createFamily, joinFamily } from "@/lib/family"
 
 export async function logOut(router : AppRouterInstance) {
     try {
@@ -22,6 +23,8 @@ export default function Dashboard() {
     // Declares User Information Variables
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
+    const [userID, setUserID] = useState("");
+    const [inputText, setInputText] = useState("");
 
     // Router for redirecting
     const router = useRouter();
@@ -39,12 +42,13 @@ export default function Dashboard() {
             if (data) {
                 setFirstName(data.firstName);
                 setLastName(data.lastName);
+                setUserID(data.uid);
             }
         }
     });
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
+    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-[#CAD7CA]">
       <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
         <Image
           className="dark:invert"
@@ -55,8 +59,8 @@ export default function Dashboard() {
           priority
         />
         <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            Welcome to the dashboard. This is a copy of the setup page for now.
+          <h1 className="max-w-s text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
+            Welcome to Shared Roots.
           </h1>
           <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
             Greetings {firstName} {lastName}!
@@ -88,20 +92,47 @@ export default function Dashboard() {
           </a>
         </div>
         <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <Link href="/login" className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]">
-            Go to Login
-          </Link>
           <Link href="/familytree" className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]">
-            Go to Family Tree
+            Family Tree
           </Link>
+          <button
+              type="submit"
+              className="w-full bg-[#698b6a] text-white py-2 my-1 rounded-3xl hover:opacity-90 transition disabled:opacity-50"
+              onClick={() => logOut(router)}
+              >
+              Sign Out
+          </button>          
         </div>
-        <button
-            type="submit"
-            className="w-full bg-[#698b6a] text-white py-2 my-1 rounded-3xl hover:opacity-90 transition disabled:opacity-50"
-            onClick={() => logOut(router)}
+        <div className="flex flex-col gap-4 w-full">
+          <input
+            type="text"
+            value={inputText}
+            onChange={(e) => setInputText(e.target.value)}
+            placeholder="Enter text here"
+            className="w-full px-4 py-2 border border-solid border-black/[.08] rounded-full dark:border-white/[.145] dark:bg-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#698b6a]"
+          />
+          <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
+            <button
+              className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
+              onClick={() => console.log("Create:", inputText)}
             >
-            Sign Out
-        </button>
+              Create Family
+            </button>
+            <button
+              className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
+              onClick={async () => {
+                try {
+                  await joinFamily(inputText, firstName, lastName, userID);
+                  console.log("Successfully joined family:", inputText);
+                } catch (error) {
+                  console.error("Failed to join family:", error);
+                }
+              }}
+            >
+              Join Family
+            </button>
+          </div>
+        </div>
       </main>
     </div>
   );

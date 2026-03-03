@@ -6,6 +6,47 @@ service cloud.firestore {
     match /users/{userId} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
+
+    // Family Collection
+    match /families/{familyId} {
+      // Roles (desc.):
+      // 1. Owner
+      // 2. Admin
+      // 3. Editor
+      // 4. Member
+
+      // Allow authenticated users to read/create family data - Allows for creation and viewing of families
+      allow read, create: if request.auth != null;
+
+      // Owner can freely edit the family
+      allow write: if request.auth != null &&
+        get(/databases/$(database)/documents/families/$(familyId)/members/$(request.auth.uid)).data.role == "owner"; 
+
+      // Admins and editors can edit the family
+      allow update: if request.auth != null &&
+        (get(/databases/$(database)/documents/families/$(familyId)/members/$(request.auth.uid)).data.role == "admin" ||
+        get(/databases/$(database)/documents/families/$(familyId)/members/$(request.auth.uid)).data.role == "editor");
+
+      // Member Subcollection - Allows users to join families
+      match /members/{userId} {
+        // All members can read info of family members
+        allow read: if request.auth != null;
+
+        // Members can create, edit, or delete their own document. Restrictions on role-editing
+        allow create: if request.auth != null && request.auth.uid == userId && request.resource.data.role == "member"; 
+        allow update: if request.auth != null && request.auth.uid == userId && request.resource.data.role == resource.data.role; 
+        allow delete: if request.auth != null && request.auth.uid == userId;
+
+        // Admins can edit documents of members but not fellow admins or the owner
+        allow write: if request.auth != null && 
+          get(/databases/$(database)/documents/families/$(familyId)/members/$(request.auth.uid)).data.role == "admin"
+          && resource.data.role != "owner" && resource.data.role != "admin";
+
+        // Owners can do whatever they want to the member documents
+        allow write: if request.auth != null && 
+          get(/databases/$(database)/documents/families/$(familyId)/members/$(request.auth.uid)).data.role == "owner";
+      }
+    }
     
     // Add more specific rules as needed for your collections
     // For example:
