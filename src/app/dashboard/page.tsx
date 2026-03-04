@@ -7,7 +7,8 @@ import { onAuthStateChanged} from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { logOut } from "@/lib/auth";
 import { auth, db } from "@/lib/firebase";
-import { createFamily, joinFamily } from "@/lib/family"
+import { createFamily, joinFamily } from "@/lib/family";
+import { sendInvite, acceptInvite, retrievePending, retrieveAccepted } from "@/lib/inbox";
 
 export default function Dashboard() {
     // Declares User Information Variables
@@ -131,7 +132,7 @@ export default function Dashboard() {
               onClick={async () => {
                 try {
                   const family = await createFamily(inputText, firstName, lastName, userID);
-                  console.log("Succesfully joined family:", inputText);
+                  console.log("Succesfully created family:", inputText);
                   setFamilyCreated(true);
                 } catch (error) {
                   console.error("Failed to create family:", error);
@@ -145,18 +146,57 @@ export default function Dashboard() {
               className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
               onClick={async () => {
                 try {
-                  await joinFamily(inputText, firstName, lastName, userID);
-                  console.log("Successfully joined family:", inputText);
-                  setFamilyJoined(true);
-                  setFamilyJoinFailed(false);
+                  await sendInvite("Join my family", "3g6N2Wnu7HfBFe1MVnMd", "TestFamily", firstName, lastName, inputText);
+                  console.log("Invite sent to:", inputText);
                 } catch (error) {
-                  console.error("Failed to join family:", error);
-                  setFamilyJoinFailed(true);
-                  setFamilyJoined(false);
+                  console.error("Failed to send invite:", error);
                 }
               }}
             >
-              Join Family
+              Send Invite
+            </button>
+            <button
+              className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
+              onClick={async () => {
+                try {
+                  const invites = await retrievePending(userID);
+                  console.log("Pending invites:", invites);
+                } catch (error) {
+                  console.error("Failed to retrieve invites:", error);
+                }
+              }}
+            >
+              View Invites
+            </button>
+            <button
+              className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
+              onClick={async () => {
+                try {
+                  await acceptInvite(inputText, "3g6N2Wnu7HfBFe1MVnMd", firstName, lastName, userID);
+                  setFamilyJoined(true);
+                  setFamilyJoinFailed(false);
+                  console.log("Accepted invite:", inputText);
+                } catch (error) {
+                  setFamilyJoined(false);
+                  setFamilyJoinFailed(true);
+                  console.error("Failed to accept invite:", error);
+                }
+              }}
+            >
+              Accept Invite
+            </button>
+            <button
+              className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
+              onClick={async () => {
+                try {
+                  const invites = await retrieveAccepted(userID);
+                  console.log("Accepted invites:", invites);
+                } catch (error) {
+                  console.error("Failed to retrieve invites:", error);
+                }
+              }}
+            >
+              View Archived
             </button>
           </div>
         </div>

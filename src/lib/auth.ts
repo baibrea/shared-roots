@@ -1,7 +1,8 @@
 import { createUserWithEmailAndPassword,signInWithEmailAndPassword, User } from "firebase/auth";
-
+import { signOut } from "firebase/auth";
 import { doc, setDoc } from "firebase/firestore";
 import { auth, db } from "./firebase";
+import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 
 export async function registerUser(
     email: string,
@@ -40,4 +41,14 @@ export async function loginUser(
     );
 
     return userCredential.user;
+}
+
+export async function logOut(router : AppRouterInstance) {
+    try {
+        await signOut(auth);
+        console.log("User signed out.");
+        router.push("/login");
+    } catch (error) {
+        console.log("Sign out failed:", error);
+    }
 }
