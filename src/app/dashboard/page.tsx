@@ -7,7 +7,7 @@ import { onAuthStateChanged} from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { logOut } from "@/lib/auth";
 import { auth, db } from "@/lib/firebase";
-import { createFamily, joinFamily } from "@/lib/family";
+import { createFamily } from "@/lib/family";
 import { sendInvite, acceptInvite, retrievePending, retrieveAccepted } from "@/lib/inbox";
 
 export default function Dashboard() {
@@ -16,6 +16,7 @@ export default function Dashboard() {
     const [lastName, setLastName] = useState("");
     const [userID, setUserID] = useState("");
     const [inputText, setInputText] = useState("");
+    const [userFamilies, setUserFamilies] = useState([]);
 
     // Family Booleans
     const [familyCreated, setFamilyCreated] = useState(false);
@@ -39,6 +40,7 @@ export default function Dashboard() {
                 setFirstName(data.firstName);
                 setLastName(data.lastName);
                 setUserID(data.uid);
+                setUserFamilies(data.families);
             }
         }
     });
@@ -199,6 +201,14 @@ export default function Dashboard() {
               View Archived
             </button>
           </div>
+          <button
+            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
+            onClick={async () => {
+              console.log(userFamilies);
+            }}
+          >
+            View Families
+          </button>
         </div>
       </main>
     </div>
