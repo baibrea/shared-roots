@@ -20,6 +20,7 @@ export default function CreateAccountPage() {
     const router = useRouter();
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        // Prevents page refresh/timeout
         e.preventDefault();
         
         // User Registration
@@ -54,7 +55,7 @@ export default function CreateAccountPage() {
             </Link>
             <div className="flex items-center justify-center min-h-screen">
                 <div className="w-full max-w-md p-12 rounded-4xl bg-[#f9f8f4] shadow-2xl shadow-">
-
+                    
                     {/*The following code only executes on successful account creation*/}
                     {registered && (
                     // Account creation message

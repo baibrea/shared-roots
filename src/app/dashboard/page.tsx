@@ -3,21 +3,11 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { onAuthStateChanged, signOut } from "firebase/auth";
+import { onAuthStateChanged} from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
-import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { logOut } from "@/lib/auth";
 import { auth, db } from "@/lib/firebase";
 import { createFamily, joinFamily } from "@/lib/family"
-
-export async function logOut(router : AppRouterInstance) {
-    try {
-        await signOut(auth);
-        console.log("User signed out.");
-        router.push("/login");
-    } catch (error) {
-        console.log("Sign out failed:", error);
-    }
-}
 
 export default function Dashboard() {
     // Declares User Information Variables
