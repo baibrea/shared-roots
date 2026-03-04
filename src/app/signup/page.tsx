@@ -4,6 +4,8 @@ import { useState } from "react";
 import { registerUser } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { FirebaseError } from "firebase/app";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth } from "@/lib/firebase";
 
 export default function CreateAccountPage() {
     // Registration Information
@@ -15,11 +17,21 @@ export default function CreateAccountPage() {
     // Checks if account is successfully created or already exists
     const [registered, setRegistered] = useState(false);
     const [exists, setExists] = useState(false);
+    const [invalidPass, setInvalidPass] = useState(false);
+    const [invalidEmail, setInvalidEmail] = useState(false);
 
     // Router for redirecting
     const router = useRouter();
 
+    // Check if user is already logged in
+    onAuthStateChanged(auth, (user) => {
+        if (user && setRegistered(false)) {
+            router.push("/dashboard");
+        }
+    });
+
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        // Prevents page refresh/timeout
         e.preventDefault();
         
         // User Registration
@@ -34,8 +46,12 @@ export default function CreateAccountPage() {
             // Handles Error if the Email is already in use.
             if (err instanceof FirebaseError) {
                 if (err.code === "auth/email-already-in-use") {
-                setExists(true);
-                } 
+                    setExists(true);
+                } else if (err.code === "auth/weak-password") {
+                    setInvalidPass(true);    
+                } else if (err.code === "auth/invalid-email") {
+                    setInvalidEmail(true);
+                }
             }
             else {
                 // Handles Generic Errors with Registration
@@ -54,7 +70,7 @@ export default function CreateAccountPage() {
             </Link>
             <div className="flex items-center justify-center min-h-screen">
                 <div className="w-full max-w-md p-12 rounded-4xl bg-[#f9f8f4] shadow-2xl shadow-">
-
+                    
                     {/*The following code only executes on successful account creation*/}
                     {registered && (
                     // Account creation message
@@ -69,6 +85,22 @@ export default function CreateAccountPage() {
                     // Account already exists message
                     <p className="bg-red-200 text-red-800 p-2 rounded mb-4">
                         <b>Email already in use. Please try logging in or use another email.</b>
+                    </p>
+                    )}
+
+                    {/*The following code only executes if password is too short*/}
+                    {invalidPass && (
+                    // Invalid password
+                    <p className="bg-red-200 text-red-800 p-2 rounded mb-4">
+                        <b>Password must be at least 6 characters in length.</b>
+                    </p>
+                    )}
+
+                    {/*The following code only executes on invalid email*/}
+                    {invalidEmail && (
+                    // Invalid Email
+                    <p className="bg-red-200 text-red-800 p-2 rounded mb-4">
+                        <b>Invalid email, please try again.</b>
                     </p>
                     )}
                     {/*End account creation failure code*/}
