@@ -1,4 +1,4 @@
 # shared-roots
-cd web<br>
+cd src<br>
 npm install<br>
 npm run dev
