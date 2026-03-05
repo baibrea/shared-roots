@@ -24,8 +24,14 @@ export async function createFamily(
         joinDate: new Date()
     });
 
+    // Creates a subcollection "people" and adds the owner to it
+    await addDoc(collection(db, "families", family.id, "people"), {
+        name: firstName,
+        lastName: lastName
+    });
+
     return family.id;
-}
+};
 
 // Function to join a family
 export async function joinFamily(
