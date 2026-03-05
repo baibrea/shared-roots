@@ -1,6 +1,7 @@
 "use client";
 
 import { usePeople } from "@/lib/PeopleContext";
+import Link from "next/link";
 
 export default function FamilyTreePage() {
   const { people } = usePeople();
@@ -26,6 +27,9 @@ export default function FamilyTreePage() {
           </li>
         ))}
       </ul>
+      <Link href="/testinput" className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 mt-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]">
+        Add Family Member
+      </Link>
     </div>
   );
 }
