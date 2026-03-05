@@ -25,10 +25,9 @@ export default function AddPersonPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Create the "instance" with a temporary ID
+    // Create the "instance" of the person to add
     const newPerson: Person = {
       ...formData,
-      id: crypto.randomUUID(), // Temp ID until Firebase provides one
     } as Person;
 
     addPerson(newPerson);
