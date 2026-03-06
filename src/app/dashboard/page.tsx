@@ -52,6 +52,16 @@ export default function Dashboard() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-[#CAD7CA]">
       <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
+        <button className="absolute top-6 right-10 bg-[#698b6a] text-white py-2 px-4 rounded-3xl hover:opacity-90 transition disabled:opacity-50 w-[120px] z-10"
+          onClick={async () => {
+            try {
+              console.log("opened inbox")
+            } catch (error) {
+              console.log("Inbox error", error);
+            }
+          }}>
+          Inbox
+        </button>
         <Image
           className="dark:invert"
           src="/next.svg"
