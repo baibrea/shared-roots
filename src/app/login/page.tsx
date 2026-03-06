@@ -19,13 +19,6 @@ export default function LoginPage() {
     // Router for redirecting
     const router = useRouter();
 
-    // Check if user is already logged in
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            router.push("/dashboard");
-        }
-    });
-
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         // Prevents page refresh/timeout
         e.preventDefault();
