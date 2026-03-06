@@ -1,7 +1,7 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged} from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
@@ -26,8 +26,8 @@ export default function Dashboard() {
     // Router for redirecting
     const router = useRouter();
 
-    onAuthStateChanged(auth, async (user) => {
-
+    useEffect(() => {
+      const unsubscribe = onAuthStateChanged(auth, async (user) => {
         // User is signed in
         if (user) {
             // Get user's document from Firestore
@@ -43,7 +43,11 @@ export default function Dashboard() {
                 setUserFamilies(data.families);
             }
         }
-    });
+      });
+
+      return () => unsubscribe();
+
+    }, []);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-[#CAD7CA]">
