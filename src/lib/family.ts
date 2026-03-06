@@ -24,17 +24,6 @@ export async function createFamily(
         joinDate: new Date()
     });
 
-    // Creates a subcollection "people" and creates a document with the owner's information
-    await addDoc(collection(db, "families", family.id, "people"), {
-        name: firstName,
-        lastName: lastName,
-        birthDate: '',
-        birthLocation: '',
-        title: '',
-        bio: '',
-        healthDetails: '',
-    });
-
     // Add family to user's families array
     await updateDoc(doc(db, "users", uid), {
         families: arrayUnion({ 
@@ -44,7 +33,7 @@ export async function createFamily(
     });
 
     return family.id;
-};
+}
 
 // Function to join a family
 export async function joinFamily(
