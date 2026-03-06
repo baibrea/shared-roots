@@ -1,4 +1,4 @@
-import { doc, addDoc, getDoc, setDoc, collection, updateDoc, arrayUnion } from "firebase/firestore";
+import { doc, addDoc, getDoc, setDoc, updateDoc, collection, arrayUnion } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 
 // Function to create a new family. Returns family ID
@@ -24,17 +24,6 @@ export async function createFamily(
         joinDate: new Date()
     });
 
-    // Creates a subcollection "people" and creates a document with the owner's information
-    await addDoc(collection(db, "families", family.id, "people"), {
-        name: firstName,
-        lastName: lastName,
-        birthDate: '',
-        birthLocation: '',
-        title: '',
-        bio: '',
-        healthDetails: '',
-    });
-
     // Add family to user's families array
     await updateDoc(doc(db, "users", uid), {
         families: arrayUnion({ 
@@ -43,9 +32,8 @@ export async function createFamily(
         })
     });
 
-
     return family.id;
-};
+}
 
 // Function to join a family
 export async function joinFamily(
@@ -68,6 +56,14 @@ export async function joinFamily(
             name: firstName + " " + lastName,
             role: "member",
             joinDate: new Date()
+        });
+
+        // Adds the family to user's families array
+        await updateDoc(doc(db, "users", uid), {
+            families: arrayUnion({ 
+                id: familyID, 
+                name: familySnap.data().familyName 
+            })
         });
         
     }

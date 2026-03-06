@@ -59,20 +59,6 @@ service cloud.firestore {
           (get(/databases/$(database)/documents/families/$(familyId)/members/$(request.auth.uid)).data.role == "owner"
           || get(/databases/$(database)/documents/families/$(familyId)).data.ownerID == request.auth.uid);
       }
-
-      // People Subcollection - Allows users to modify family tree
-      match /people/{personId} {
-
-        // Allow all authenticated users to read people
-        allow read: if request.auth != null;
-
-        // Allow authenticated users to create new family member documents
-        allow create: if request.auth != null;
-        allow update: if request.auth != null;
-
-        // Allow all users to delete family member documents (for now)
-        allow delete: if request.auth != null;
-      }
     }
     
     // Add more specific rules as needed for your collections
