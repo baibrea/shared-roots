@@ -8,9 +8,10 @@ import { usePeople } from "@/lib/PeopleContext";
 export default function FamilyTreePage() {
   const { people } = usePeople();
   const [showForm, setShowForm] = useState(false);
+  console.log("People loaded: ", people);
 
   return (
-    <div className="p-10 bg-[white">
+    <div className="p-10 ">
       <h1 className="text-2xl font-bold mb-6">Family Tree</h1>
 
       {people.length === 0 && <p>No people added yet.</p>}
@@ -27,6 +28,9 @@ export default function FamilyTreePage() {
             <p>Title: {p.title || "Unknown"}</p>
             <p>Bio: {p.bio || "Unknown"}</p>
             <p>Health Details: {p.healthDetails || "Unknown"}</p>
+            <p>Parents: {p.parents?.length ? p.parents.join(", ") : "Unknown"}</p>
+            <p>Children: {p.children?.length ? p.children.join(", ") : "Unknown"}</p>
+            <p>Spouse: {p.spouse ?? "Unknown"}</p>
           </li>
         ))}
       </ul>

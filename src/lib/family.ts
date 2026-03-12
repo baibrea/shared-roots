@@ -26,7 +26,7 @@ export async function createFamily(
 
     // Creates a subcollection "people" and creates a document with the owner's information
     await addDoc(collection(db, "families", family.id, "people"), {
-        name: firstName,
+        firstName: firstName,
         lastName: lastName,
         birthDate: '',
         birthLocation: '',
@@ -35,7 +35,7 @@ export async function createFamily(
         healthDetails: '',
         parents: [],
         children: [],
-        spouse: ''
+        spouse: null
     });
 
     // Add family to user's families array
