@@ -4,11 +4,18 @@ import Link from "next/link";
 import { useState } from "react";
 import AddPersonForm from "@/lib/AddPersonForm";
 import { usePeople } from "@/lib/PeopleContext";
+import FamilyTreeChart from "@/components/FamilyTreeChart";
 
 export default function FamilyTreePage() {
   const { people } = usePeople();
   const [showForm, setShowForm] = useState(false);
+  const [selectedPerson, setSelectedPerson] = useState<{ id: string; name: string } | null>(null);
   console.log("People loaded: ", people);
+
+  const handleNodeClick = (person: {id: string, name: string }) => {
+    setSelectedPerson(person);
+    setShowForm(true);
+  };
 
   return (
     <div className="p-10 ">
@@ -16,7 +23,11 @@ export default function FamilyTreePage() {
 
       {people.length === 0 && <p>No people added yet.</p>}
 
-      <ul className="space-y-4">
+      {people.length > 0 && (
+        <FamilyTreeChart people={people} />
+      )}
+
+      {/* <ul className="space-y-4">
         {people.map((p) => (
           <li key={p.id} className="p-4 bg-white rounded-xl shadow text-[#3A433A]">
             <strong>
@@ -33,7 +44,7 @@ export default function FamilyTreePage() {
             <p>Spouse: {p.spouse ?? "Unknown"}</p>
           </li>
         ))}
-      </ul>
+      </ul> */}
 
       <button
         onClick={() => setShowForm(true)}

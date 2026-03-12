@@ -4,6 +4,8 @@ export interface Person {
   firstName: string;
   lastName: string;
 
+  avatar?: string;
+
   birthDate?: string;
   birthLocation?: string;
 
@@ -16,3 +18,19 @@ export interface Person {
   children: string[];
   spouse: string;
 }
+
+// export interface FamilyChartNode {
+//   id: string;
+//   data: {
+//     gender: "M" | "F"; // Placeholder
+//     "first name": string;
+//     "last name": string;
+//     "birth date": string;
+//     "avatar"?: string;
+//     }
+//     rels: {
+//         parents?: string[];
+//         children?: string[];
+//         spouses?: string[];
+//     }
+// }
