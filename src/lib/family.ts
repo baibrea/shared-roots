@@ -33,6 +33,9 @@ export async function createFamily(
         title: '',
         bio: '',
         healthDetails: '',
+        parents: [],
+        children: [],
+        spouse: ''
     });
 
     // Add family to user's families array

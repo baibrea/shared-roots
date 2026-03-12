@@ -46,6 +46,7 @@ export function PeopleProvider({ children }: { children: React.ReactNode }) {
 
       const familyId = families[0].id; // Use the first family temporarily
       console.log("Current family ID: ", familyId);
+      console.log("Current user ID: ", user.uid);
 
       const peopleCollection = collection(db, "families", familyId, "people");
 

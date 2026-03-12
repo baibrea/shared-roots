@@ -1,14 +1,17 @@
 "use client";
 
-import { usePeople } from "@/lib/PeopleContext";
 import Link from "next/link";
+import { useState } from "react";
+import AddPersonForm from "@/lib/AddPersonForm";
+import { usePeople } from "@/lib/PeopleContext";
 
 export default function FamilyTreePage() {
   const { people } = usePeople();
+  const [showForm, setShowForm] = useState(false);
 
   return (
-    <div className="p-10">
-      <h1 className="text-2xl font-bold mb-6">Family Tree (Only the data)</h1>
+    <div className="p-10 bg-[white">
+      <h1 className="text-2xl font-bold mb-6">Family Tree</h1>
 
       {people.length === 0 && <p>No people added yet.</p>}
 
@@ -27,9 +30,16 @@ export default function FamilyTreePage() {
           </li>
         ))}
       </ul>
-      <Link href="/testinput" className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 mt-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]">
+
+      <button
+        onClick={() => setShowForm(true)}
+        className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white text-black px-5 mt-5 hover:bg-[#383838] md:w-[200px]"
+      >
         Add Family Member
-      </Link>
+      </button>
+
+      {showForm && <AddPersonForm onClose={() => setShowForm(false)} />}
+
     </div>
   );
 }

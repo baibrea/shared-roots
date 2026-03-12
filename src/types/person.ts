@@ -12,7 +12,7 @@ export interface Person {
   
   healthDetails?: string;
 
-  parentIds: string[];
-  childIds: string[];
-  spouseIds: string[];
+  parents: string[];
+  children: string[];
+  spouse: string;
 }
