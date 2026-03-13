@@ -4,6 +4,7 @@ import { Person } from "@/types/person";
 import { Plus, User } from "lucide-react";
 import { useEffect, useRef, useState, useLayoutEffect, useCallback } from "react";
 
+// Props needed for VisualGraph
 interface VisualGraphProps {
   people: Person[];
   activePerson: Person;
@@ -12,70 +13,109 @@ interface VisualGraphProps {
 }
 
 export default function VisualGraph({ people, activePerson, onSelect, onAddRelative }: VisualGraphProps) {
-	const [lines, setLines] = useState<string[]>([]);
+	// useState to hold the SVG path data for both dashed (marriage) and solid (parent-child) lines
+	const [paths, setPaths] = useState<{ dashed: string[], solid: string[] }>({ 
+		dashed: [], 
+		solid: [] 
+	});
   const containerRef = useRef<HTMLDivElement>(null);
 
-  const findPeople = (ids: string[] | undefined) => people.filter(p => ids?.includes(p.id));
-  const parents = findPeople(activePerson?.parents);
-  const children = findPeople(activePerson?.children);
-  const spouse = people.find(p => p.id === activePerson?.spouse);
-  const inLaws = spouse ? findPeople(spouse.parents) : [];
+	/*
+		For each generation, people are grouped into individual or spouse pairs and sorted by the ID of the first person in the unit.
+		This is so the layout remains stable and minimizes "jumping" when changing the activePerson, 
+		as the relative order of siblings and spouses is preserved based on their IDs.
+	*/
+  const generations = getGenerationalLevels(activePerson, people, 5);
+  const sortedLevelKeys = Object.keys(generations)
+    .map(Number)
+    .sort((a, b) => a - b);
+
+	sortedLevelKeys.forEach(level => {
+		const peopleInLevel = generations[level];
+		const units: Person[][] = [];
+		const processed = new Set<string>();
+
+		// 1. Group into Units (Single people or Spouse Pairs)
+		peopleInLevel.forEach(p => {
+			if (processed.has(p.id)) return;
+
+			const spouse = peopleInLevel.find(s => s.id === p.spouse);
+			if (spouse) {
+				// Always put the lower ID first within the pair for absolute stability
+				const pair = [p, spouse].sort((a, b) => a.id.localeCompare(b.id));
+				units.push(pair);
+				processed.add(p.id);
+				processed.add(spouse.id);
+			} else {
+				units.push([p]);
+				processed.add(p.id);
+			}
+		});
+
+		// 2. Sort the Units themselves by the ID of the first person in the unit
+		// This is the key to stopping the "jump" when you change activePerson
+		units.sort((unitA, unitB) => unitA[0].id.localeCompare(unitB[0].id));
+
+		// 3. Flatten back into the generation
+		generations[level] = units.flat();
+	});
 
 	// Logic to calculate line paths
-  const updateLines = useCallback(() => {
-			if (!containerRef.current || !activePerson?.id) return;
-			
-			const containerRect = containerRef.current.getBoundingClientRect();
-			const newPaths: string[] = [];
+	const updateLines = useCallback(() => {
+		if (!containerRef.current) return;
+		const containerRect = containerRef.current.getBoundingClientRect();
+		const dashedPaths: string[] = [];
+		const solidPaths: string[] = [];
 
-			const getCenter = (id: string) => {
-				if (!id) return null;
-				const el = containerRef.current?.querySelector(`[data-node-id="${id}"]`);
-				if (!el) return null;
-				const r = el.getBoundingClientRect();
-				return {
-					x: (r.left + r.width / 2) - containerRect.left,
-					y: (r.top + r.height / 2) - containerRect.top
-				};
+		const getCenter = (id: string) => {
+			const el = containerRef.current?.querySelector(`[data-node-id="${id}"]`);
+			if (!el) return null;
+			const r = el.getBoundingClientRect();
+			return {
+				x: (r.left + r.width / 2) - containerRect.left,
+				y: (r.top + r.height / 2) - containerRect.top
 			};
+		};
 
-			const findPeople = (ids: string[] | undefined) => people.filter(p => ids?.includes(p.id));
-			const parents = findPeople(activePerson.parents);
-			const children = findPeople(activePerson.children);
-			const spouse = people.find(p => p.id === activePerson.spouse);
-			const inLaws = spouse ? findPeople(spouse.parents) : [];
+		const processedMarriages = new Set<string>();
 
-			const activeMid = getCenter(activePerson.id);
-			if (!activeMid) return;
+		people.forEach(p => {
+			const pMid = getCenter(p.id);
+			if (!pMid) return;
 
-			parents.forEach(p => {
-				const pMid = getCenter(p.id);
-				if (pMid) newPaths.push(`M ${activeMid.x} ${activeMid.y} L ${pMid.x} ${pMid.y}`);
-			});
+			if (p.spouse) {
+				const marriageKey = [p.id, p.spouse].sort().join("-");
+				if (!processedMarriages.has(marriageKey)) {
+					const sMid = getCenter(p.spouse);
+					if (sMid) {
+						// 1. DASHED Line for Marriage
+						dashedPaths.push(`M ${pMid.x} ${pMid.y} L ${sMid.x} ${sMid.y}`);
 
-			if (spouse) {
-				const sMid = getCenter(spouse.id);
-				if (sMid) {
-					newPaths.push(`M ${activeMid.x} ${activeMid.y} L ${sMid.x} ${sMid.y}`);
-					inLaws.forEach(il => {
-						const ilMid = getCenter(il.id);
-						if (ilMid) newPaths.push(`M ${sMid.x} ${sMid.y} L ${ilMid.x} ${ilMid.y}`);
-					});
+						// 2. SOLID Lines for Children (from midpoint)
+						const midX = (pMid.x + sMid.x) / 2;
+						const midY = (pMid.y + sMid.y) / 2;
+						
+						p.children?.forEach(childId => {
+							const cMid = getCenter(childId);
+							if (cMid) {
+								const midPointY = (midY + cMid.y) / 2;
+								solidPaths.push(`M ${midX} ${midY} V ${midPointY} H ${cMid.x} V ${cMid.y}`);
+							}
+						});
+					}
+					processedMarriages.add(marriageKey);
 				}
+			} else {
+				// Single parent solid lines
+				p.children?.forEach(childId => {
+					const cMid = getCenter(childId);
+					if (cMid) solidPaths.push(`M ${pMid.x} ${pMid.y} L ${cMid.x} ${cMid.y}`);
+				});
 			}
+		});
 
-			children.forEach(c => {
-				const cMid = getCenter(c.id);
-				if (cMid) newPaths.push(`M ${activeMid.x} ${activeMid.y} L ${cMid.x} ${cMid.y}`);
-			});
-
-			// 2. ONLY SET STATE IF THE PATHS HAVE ACTUALLY CHANGED
-			// Joining the strings is a quick way to compare arrays
-			setLines(prev => {
-				if (prev.join('|') === newPaths.join('|')) return prev;
-				return newPaths;
-			});
-		}, [activePerson, people]); // Only recreate if the family data changes
+		setPaths({ dashed: dashedPaths, solid: solidPaths });
+	}, [people]);
 
 		// 3. Separate the Layout Effect from the Resize logic
 		useLayoutEffect(() => {
@@ -99,61 +139,60 @@ export default function VisualGraph({ people, activePerson, onSelect, onAddRelat
 		if (!activePerson) return null;
 
   return (
-    <div ref={containerRef} className="relative flex-1 w-full h-full flex flex-col items-center justify-center overflow-hidden p-10">
-      {/* SVG Layer */}
+    <div ref={containerRef} className="relative flex-1 w-full h-full overflow-auto p-20">
       <svg className="absolute inset-0 w-full h-full pointer-events-none overflow-visible">
-        {lines.map((d, i) => (
-          <path
-            key={i}
-            d={d}
-            stroke="white"
-            strokeWidth="2"
-            strokeOpacity="0.2"
-            fill="none"
-            strokeDasharray="5,5" // Makes the lines dashed for a cleaner look
-            // className="animate-in fade-in duration-1000"
-          />
+				{/* Render Dashed Marriage Lines */}
+				{paths.dashed.map((d, i) => (
+					<path
+						key={`dashed-${i}`}
+						d={d}
+						stroke="white"
+						strokeWidth="2"
+						strokeOpacity="0.3"
+						fill="none"
+						strokeDasharray="5,5" // Dashed lines
+					/>
+				))}
+
+				{/* Render Solid Children Lines */}
+				{paths.solid.map((d, i) => (
+					<path
+						key={`solid-${i}`}
+						d={d}
+						stroke="white"
+						strokeWidth="2"
+						strokeOpacity="0.5" // Made a bit more prominent
+						fill="none"
+						// No strokeDasharray, solid lines
+					/>
+				))}
+			</svg>
+
+      <div className="relative z-10 flex flex-col items-center gap-24">
+        {// Render each generation by row, with people spaced out evenly and centered horizontally
+				sortedLevelKeys.map(level => (
+          <div 
+						key={level} 
+						className="flex flex-row flex-nowrap justify-center items-center gap-12 min-h-[150px]">
+            {// Render each person in the generation using the NodeCard component
+						generations[level].map(p => (
+              <NodeCard 
+                key={p.id} 
+                person={p} 
+                variant="small" 
+                isActive={p.id === activePerson.id}
+                onClick={() => onSelect(p)} 
+                onAdd={() => onAddRelative(p)} 
+              />
+            ))}
+          </div>
         ))}
-      </svg>
-
-      {/* Rows (Using your existing Grid/Flex logic) */}
-      <div className="z-10 flex flex-col items-center gap-[8vh] w-full max-w-6xl">
-        
-        {/* ROW: PARENTS */}
-        <div className="grid grid-cols-3 w-full items-end">
-          <div />
-          <div className="flex justify-center gap-[2vw]">
-            {parents.map(p => <NodeCard key={p.id} person={p} variant="small" onClick={() => onSelect(p)} onAdd={() => onAddRelative(p)} />)}
-          </div>
-          <div className="flex justify-start pl-[4vw]">
-            {inLaws.length > 0 && (
-              <div className="flex gap-[2vw] border-l border-white/10 pl-4">
-                {inLaws.map(p => <NodeCard key={p.id} person={p} variant="small" onClick={() => onSelect(p)} onAdd={() => onAddRelative(p)} />)}
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* ROW: ACTIVE */}
-        <div className="grid grid-cols-3 w-full items-center">
-          <div />
-          <div className="flex justify-center">
-            <NodeCard person={activePerson} variant="small" isActive onClick={() => onSelect(activePerson)} onAdd={() => onAddRelative(activePerson)} />
-          </div>
-          <div className="flex justify-start pl-[5vw]">
-            {spouse && <NodeCard person={spouse} variant="small" onClick={() => onSelect(spouse)} onAdd={() => onAddRelative(spouse)} />}
-          </div>
-        </div>
-
-        {/* ROW: CHILDREN */}
-        <div className="flex flex-wrap justify-center gap-[2vw]">
-          {children.map(p => <NodeCard key={p.id} person={p} variant="small" onClick={() => onSelect(p)} onAdd={() => onAddRelative(p)} />)}
-        </div>
       </div>
     </div>
   );
 }
 
+// This function establishes the structure and styling of each individual family member in the graph
 function NodeCard({ person, variant, isActive, onClick, onAdd }: { 
   person: Person, 
   variant: 'small' | 'large', 
@@ -175,8 +214,8 @@ function NodeCard({ person, variant, isActive, onClick, onAdd }: {
     <div data-node-id={person.id} className={`relative group shrink-0 ${cardWidth} aspect-square`}>
       <div 
         onClick={onClick}
-        className={`w-full h-full bg-white rounded-xl shadow-sm border-2 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center p-2 text-center
-          ${isActive ? "border-[#698b6a] scale-105 shadow-md" : "border-transparent hover:border-gray-200 hover:shadow-md"}`}
+        className={`w-full h-full rounded-xl shadow-sm border-2 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center p-2 text-center
+          ${isActive ? "border-[#698b6a] scale-105 shadow-md bg-[#698b6a]" : "border-transparent hover:border-gray-200 hover:shadow-md bg-white "}`}
       >
         {/* Icon also scales using a percentage of the card's width */}
         <div className={`rounded-full bg-gray-50 flex items-center justify-center mb-1 transition-colors group-hover:bg-gray-100 
@@ -199,4 +238,44 @@ function NodeCard({ person, variant, isActive, onClick, onAdd }: {
       </button>
     </div>
   );
+}
+
+// This function uses BFS to traverse the family tree starting from the active person, 
+// grouping people into generational levels based on their relationships (parents, children, spouses).
+function getGenerationalLevels(activePerson: Person, allPeople: Person[], maxDepth = 2) {
+  const levels: Record<number, Person[]> = {};
+  const visited = new Set<string>();
+  // We track 'distance' to know when to stop
+  const queue: { id: string; level: number; distance: number }[] = [
+    { id: activePerson.id, level: 0, distance: 0 }
+  ];
+
+  visited.add(activePerson.id);
+
+  while (queue.length > 0) {
+    const { id, level, distance } = queue.shift()!;
+    const person = allPeople.find(p => p.id === id);
+    if (!person) continue;
+
+    if (!levels[level]) levels[level] = [];
+    levels[level].push(person);
+
+    // Stop searching further if we've reached the edge of our maxDepth
+    if (distance >= maxDepth) continue;
+
+    // Identify all neighbors
+    const neighbors = [
+      ...(person.parents || []).map(pid => ({ id: pid, level: level - 1 })),
+      ...(person.children || []).map(pid => ({ id: pid, level: level + 1 })),
+      ...(person.spouse ? [{ id: person.spouse, level: level }] : [])
+    ];
+
+    for (const rel of neighbors) {
+      if (!visited.has(rel.id)) {
+        visited.add(rel.id);
+        queue.push({ ...rel, distance: distance + 1 });
+      }
+    }
+  }
+  return levels;
 }

@@ -72,48 +72,20 @@ export default function FamilyTreePage() {
 
         {people.length === 0 && <p>No people added yet.</p>}
 
-        {/* <ul className="space-y-4">
-          {people.map((p) => (
-            <li 
-              key={p.id} 
-              onClick={() => setSelectedPerson(p)}
-              className="p-4 bg-white rounded-xl shadow text-[#3A433A] cursor-pointer">
-              <strong>
-                {p.firstName} {p.lastName}
-              </strong>
-              <p>Person ID: {p.id}</p>
-              <p>Birth Date: {p.birthDate || "Unknown"}</p>
-              <p>Birth Location: {p.birthLocation || "Unknown"}</p>
-              <p>Title: {p.title || "Unknown"}</p>
-              <p>Bio: {p.bio || "Unknown"}</p>
-              <p>Health Details: {p.healthDetails || "Unknown"}</p>
-              <p>Parents: {getPeopleNames(p.parents)}</p>
-              <p>Children: {getPeopleNames(p.children)}</p>
-              <p>Spouse: {getPersonName(p.spouse)}</p>
-
-              <button
-                onClick={() => {
-                  setReferencePerson(p);
-                  setShowForm(true);
-                }}
-                className="mt-2 px-3 py-1 bg-[#383838] text-white rounded-full hover:bg-[#282828]"
-              >
-                +
-              </button>
-            </li>
-          ))}
-        </ul> */}
-        {activePerson ? (
+        
+        {// If there is an active person, show the graph. Otherwise, show a message prompting to add family members.
+        activePerson ? (
           <div className="flex-1 flex items-center justify-center">
             <VisualGraph people={people} activePerson={activePerson} onSelect={(p) => setSelectedPersonId(p.id)} onAddRelative={handleAddRelative} />
           </div>
         ) : (
           <div className="flex-1 flex items-center justify-center">
-            <p className="text-gray-500">Add your first family member to get started.</p>
+            <p className="text-gray-500">Loading family members....If you don&apos;t see any, start by adding a family member!</p>
           </div>
         )}        
 
-        {showForm && referencePerson && (
+        {// Show the add person form if it's enabled and a reference person has been selected
+        showForm && referencePerson && (
           <AddPersonForm 
             onClose={() => setShowForm(false)} 
             referencePerson={referencePerson} 
@@ -131,23 +103,6 @@ export default function FamilyTreePage() {
       <div className="w-1/4 p-10">
         {/* UI when no family member is selected */}
         {!selectedPerson && (
-          // <div>
-          // <strong>
-          //   <p>family members!</p>
-          // </strong>
-
-          // <ul>
-          //   {people.map((p) => (
-          //     <li 
-          //     key={p.id} 
-          //     onClick={() => setSelectedPerson(p)}
-          //     className="cursor-pointer"
-          //     >
-          //       {p.firstName} {p.lastName}
-          //     </li>
-          //   ))}
-          // </ul>
-          // </div>
           <div className="flex flex-col h-full">
             <h2 className="text-xl font-bold mb-4">Directory</h2>
             
