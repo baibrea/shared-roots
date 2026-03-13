@@ -48,6 +48,22 @@ export default function FamilyTreePage() {
     return names.join(", ");
   }
 
+  function getAge(birthDate: string | undefined) {
+    if (!birthDate) return "Unknown";
+
+    const today = new Date();
+    const birth = new Date(birthDate);
+
+    let age = today.getFullYear() - birth.getFullYear();
+    const monthDifference = today.getMonth() - birth.getMonth();
+
+    if (monthDifference < 0 || (monthDifference === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+
+    return age;
+  }
+
   return (
     <div className="flex h-screen">
       <div className="w-3/4 p-10 overflow-y-auto border-r border-gray-200 flex flex-col">
@@ -153,32 +169,76 @@ export default function FamilyTreePage() {
         )}
 
         {/* UI when a family member is selected */}
-        {selectedPerson && (
-          <div>
-            <button
-              onClick={() => setSelectedPerson(null)}
-            >
-              Back
-            </button>
+{selectedPerson && (
+  <div className="h-full overflow-y-auto">
+    <button
+      onClick={() => setSelectedPerson(null)}
+      className="mb-6 px-4 py-2 bg-[#383838] text-white rounded-full hover:bg-[#282828]"
+    >
+      Back
+    </button>
 
-            <h2>
-              {selectedPerson.firstName} {selectedPerson.lastName}
-            </h2>
-
-            <p>Birth Date: {selectedPerson.birthDate || "Unknown"}</p>
-            <p>Birth Location: {selectedPerson.birthLocation || "Unknown"}</p>
-            <p>Title: {selectedPerson.title || "Unknown"}</p>
-            <p>Bio: {selectedPerson.bio || "Unknown"}</p>
-            <p>Health Details: {selectedPerson.healthDetails || "Unknown"}</p>
-
-            <p>Parents: {getPeopleNames(selectedPerson.parents)}</p>
-            <p>Children: {getPeopleNames(selectedPerson.children)}</p>
-            <p>Spouse: {getPersonName(selectedPerson.spouse)}</p>
-          </div>
-        )}
-
+    <div className="text-center mb-8">
+      <div className="py-30">
+        image
       </div>
 
+      <h2 className="text-m text-gray-400">
+        <strong className="text-xl text-white">
+          {selectedPerson.firstName} {selectedPerson.lastName},
+        </strong>
+        {selectedPerson.birthDate
+          ? ` ${getAge(selectedPerson.birthDate)}`
+          : ""}
+      </h2>
+      <p className="text-gray-300">
+        {selectedPerson.birthDate || "Unknown"}
+      </p>
+
+      <p className="text-gray-300">
+        {selectedPerson.birthLocation || "Unknown"}
+      </p>
+
+      <p className="text-gray-300" >
+          Title: {selectedPerson.title || "Unknown"}
+      </p>
+
+    </div>
+
+    <div className="mb-8">
+      <h3 className="font-semibold mb-2 text-lg">Bio</h3>
+      <p className="text-gray-300">
+        {selectedPerson.bio || "No bio created yet."}
+      </p>
+    </div>
+
+    <div className="flex gap-6">
+
+      <div className="w-1/2 space-y-2">
+        <h3 className="font-semibold text-lg">Details</h3>
+        <p>
+          Health: {selectedPerson.healthDetails || "Unknown"}
+        </p>
+      </div>
+
+      <div className="w-1/2 space-y-2">
+        <h3 className="font-semibold text-lg">Family</h3>
+
+        <p>
+          Parents: {getPeopleNames(selectedPerson.parents)}
+        </p>
+        <p>
+          Children: {getPeopleNames(selectedPerson.children)}
+        </p>
+        <p>
+          Spouse: {getPersonName(selectedPerson.spouse)}
+        </p>
+      </div>
+      
+    </div>
+  </div>
+)}
+      </div>
     </div>
   );
 }
