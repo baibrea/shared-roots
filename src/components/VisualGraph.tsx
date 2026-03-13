@@ -131,7 +131,7 @@ export default function VisualGraph({ people, activePerson, onSelect, onAddRelat
           person={activePerson} 
           variant="large" 
           isActive 
-          onClick={() => {}} 
+          onClick={() => onSelect(activePerson)} 
           onAdd={() => onAddRelative(activePerson)}
         />
         
