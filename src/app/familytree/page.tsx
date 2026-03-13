@@ -169,75 +169,75 @@ export default function FamilyTreePage() {
         )}
 
         {/* UI when a family member is selected */}
-{selectedPerson && (
-  <div className="h-full overflow-y-auto">
-    <button
-      onClick={() => setSelectedPerson(null)}
-      className="mb-6 px-4 py-2 bg-[#383838] text-white rounded-full hover:bg-[#282828]"
-    >
-      Back
-    </button>
+        {selectedPerson && (
+          <div className="h-full overflow-y-auto">
+            <button
+              onClick={() => setSelectedPerson(null)}
+              className="mb-6 px-4 py-2 bg-[#383838] text-white rounded-full hover:bg-[#282828]"
+            >
+              Back
+            </button>
 
-    <div className="text-center mb-8">
-      <div className="py-30">
-        image
-      </div>
+            <div className="text-center mb-8">
+              <div className="py-30">
+                image
+              </div>
 
-      <h2 className="text-m text-gray-400">
-        <strong className="text-xl text-white">
-          {selectedPerson.firstName} {selectedPerson.lastName},
-        </strong>
-        {selectedPerson.birthDate
-          ? ` ${getAge(selectedPerson.birthDate)}`
-          : ""}
-      </h2>
-      <p className="text-gray-300">
-        {selectedPerson.birthDate || "Unknown"}
-      </p>
+              <h2 className="text-m text-gray-400">
+                <strong className="text-xl text-white">
+                  {selectedPerson.firstName} {selectedPerson.lastName},
+                </strong>
+                {selectedPerson.birthDate
+                  ? ` ${getAge(selectedPerson.birthDate)}`
+                  : ""}
+              </h2>
+              <p className="text-gray-300">
+                {selectedPerson.birthDate || "Unknown"}
+              </p>
 
-      <p className="text-gray-300">
-        {selectedPerson.birthLocation || "Unknown"}
-      </p>
+              <p className="text-gray-300">
+                {selectedPerson.birthLocation || "Unknown"}
+              </p>
 
-      <p className="text-gray-300" >
-          Title: {selectedPerson.title || "Unknown"}
-      </p>
+              <p className="text-gray-300" >
+                  Title: {selectedPerson.title || "Unknown"}
+              </p>
 
-    </div>
+            </div>
 
-    <div className="mb-8">
-      <h3 className="font-semibold mb-2 text-lg">Bio</h3>
-      <p className="text-gray-300">
-        {selectedPerson.bio || "No bio created yet."}
-      </p>
-    </div>
+            <div className="mb-8">
+              <h3 className="font-semibold mb-2 text-lg">Bio</h3>
+              <p className="text-gray-300">
+                {selectedPerson.bio || "No bio created yet."}
+              </p>
+            </div>
 
-    <div className="flex gap-6">
+            <div className="flex gap-6">
 
-      <div className="w-1/2 space-y-2">
-        <h3 className="font-semibold text-lg">Details</h3>
-        <p>
-          Health: {selectedPerson.healthDetails || "Unknown"}
-        </p>
-      </div>
+              <div className="w-1/2 space-y-2">
+                <h3 className="font-semibold text-lg">Details</h3>
+                <p>
+                  Health: {selectedPerson.healthDetails || "Unknown"}
+                </p>
+              </div>
 
-      <div className="w-1/2 space-y-2">
-        <h3 className="font-semibold text-lg">Family</h3>
+              <div className="w-1/2 space-y-2">
+                <h3 className="font-semibold text-lg">Family</h3>
 
-        <p>
-          Parents: {getPeopleNames(selectedPerson.parents)}
-        </p>
-        <p>
-          Children: {getPeopleNames(selectedPerson.children)}
-        </p>
-        <p>
-          Spouse: {getPersonName(selectedPerson.spouse)}
-        </p>
-      </div>
-      
-    </div>
-  </div>
-)}
+                <p>
+                  Parents: {getPeopleNames(selectedPerson.parents)}
+                </p>
+                <p>
+                  Children: {getPeopleNames(selectedPerson.children)}
+                </p>
+                <p>
+                  Spouse: {getPersonName(selectedPerson.spouse)}
+                </p>
+              </div>
+              
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
