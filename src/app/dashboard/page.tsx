@@ -16,6 +16,8 @@ export default function Dashboard() {
     const [lastName, setLastName] = useState("");
     const [userID, setUserID] = useState("");
     const [inputText, setInputText] = useState("");
+    const [familyId, setFamilyId] = useState("");
+    const [familyName, setFamilyName] = useState("");
     const [userFamilies, setUserFamilies] = useState([]);
 
     // Family Booleans
@@ -110,11 +112,26 @@ export default function Dashboard() {
           </Link>   
         </div>
         <div className="flex flex-col gap-4 w-full">
+          {/*Input Bars*/}
           <input
             type="text"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
-            placeholder="Enter text here"
+            placeholder="Enter text here - Destination Email or Invitation Id"
+            className="w-full px-4 py-2 border border-solid border-black/[.08] rounded-full dark:border-white/[.145] dark:bg-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#698b6a]"
+          />
+          <input
+            type="text"
+            value={familyId}
+            onChange={(e) => setFamilyId(e.target.value)}
+            placeholder="Enter family id - Only for invitation acceptance"
+            className="w-full px-4 py-2 border border-solid border-black/[.08] rounded-full dark:border-white/[.145] dark:bg-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#698b6a]"
+          />
+          <input
+            type="text"
+            value={familyName}
+            onChange={(e) => setFamilyName(e.target.value)}
+            placeholder="Enter family name"
             className="w-full px-4 py-2 border border-solid border-black/[.08] rounded-full dark:border-white/[.145] dark:bg-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#698b6a]"
           />
           <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
@@ -137,7 +154,7 @@ export default function Dashboard() {
               className="flex h-12 w-full items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
               onClick={async () => {
                 try {
-                  await sendInvite("Join my family", "3g6N2Wnu7HfBFe1MVnMd", "TestFamily", firstName, lastName, inputText);
+                  await sendInvite("Join my family", familyId, familyName, firstName, lastName, inputText);
                   console.log("Invite sent to:", inputText);
                 } catch (error) {
                   console.error("Failed to send invite:", error);
@@ -163,7 +180,7 @@ export default function Dashboard() {
               className="flex h-12 w-full items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
               onClick={async () => {
                 try {
-                  await acceptInvite(inputText, "3g6N2Wnu7HfBFe1MVnMd", firstName, lastName, userID);
+                  await acceptInvite(inputText, familyName, firstName, lastName, userID);
                   setFamilyJoined(true);
                   setFamilyJoinFailed(false);
                   console.log("Accepted invite:", inputText);
