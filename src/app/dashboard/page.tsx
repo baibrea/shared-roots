@@ -50,26 +50,19 @@ export default function Dashboard() {
     }, []);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-[#CAD7CA]">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <button className="absolute top-6 right-10 bg-[#698b6a] text-white py-2 px-4 rounded-3xl hover:opacity-90 transition disabled:opacity-50 w-[120px] z-10"
-          onClick={async () => {
-            try {
-              console.log("opened inbox")
-            } catch (error) {
-              console.log("Inbox error", error);
-            }
-          }}>
-          Inbox
-        </button>
+    <div className="flex min-h-screen bg-zinc-50 font-sans dark:bg-[#FFFFFF]">
+      <meta name="viewport" content="width=device-width, initial-scale=1"/>
+      <aside className="flex flex-col min-h-screen w-60 bg-[#657B97] items-center justify-center gap-4 justify-start py-10">
         <Image
-          className="dark:invert"
+          className="dark:invert "
           src="/next.svg"
           alt="Next.js logo"
           width={100}
           height={20}
           priority
         />
+      </aside>
+      <main className="flex min-h-screen w-full max-w-7xl flex-col items-center justify-between py-32 px-16 bg-[#DDE7F4] sm:items-start">
         <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
 
           {/*Conditional Family creation/join success/fail messages*/}
@@ -90,45 +83,20 @@ export default function Dashboard() {
           )}
           {/*End Conditional Family Messages*/}
 
-          <h1 className="max-w-s text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
+          <h1 className="max-w-s text-3xl font-semibold leading-10 tracking-tight text-black">
             Welcome to Shared Roots.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
+          </h1> 
+          <p className="max-w-md text-lg leading-8 text-black">
             Greetings {firstName} {lastName}!
           </p>
         </div>
         <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <Link href="/familytree" className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]">
+          <Link href="/familytree" className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#657B97] px-5 text-white transition-colors dark:hover:bg-[#556880] md:w-[158px]">
             Family Tree
           </Link>
           <button
               type="submit"
-              className="w-full bg-[#698b6a] text-white py-2 my-1 rounded-3xl hover:opacity-90 transition disabled:opacity-50"
+              className="w-full bg-[#657B97] text-white py-2 my-1 rounded-3xl transition-colors dark:hover:bg-[#556880]"
               onClick={() => logOut(router)}
               >
               Sign Out
@@ -144,7 +112,7 @@ export default function Dashboard() {
           />
           <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
             <button
-              className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
+              className="flex h-12 w-full items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
               onClick={async () => {
                 try {
                   const family = await createFamily(inputText, firstName, lastName, userID);
@@ -159,7 +127,7 @@ export default function Dashboard() {
               Create Family
             </button>
             <button
-              className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
+              className="flex h-12 w-full items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
               onClick={async () => {
                 try {
                   await sendInvite("Join my family", "3g6N2Wnu7HfBFe1MVnMd", "TestFamily", firstName, lastName, inputText);
@@ -172,7 +140,7 @@ export default function Dashboard() {
               Send Invite
             </button>
             <button
-              className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
+              className="flex h-12 w-full items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
               onClick={async () => {
                 try {
                   const invites = await retrievePending(userID);
@@ -185,7 +153,7 @@ export default function Dashboard() {
               View Invites
             </button>
             <button
-              className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
+              className="flex h-12 w-full items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
               onClick={async () => {
                 try {
                   await acceptInvite(inputText, "3g6N2Wnu7HfBFe1MVnMd", firstName, lastName, userID);
@@ -202,7 +170,7 @@ export default function Dashboard() {
               Accept Invite
             </button>
             <button
-              className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
+              className="flex h-12 w-full items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
               onClick={async () => {
                 try {
                   const invites = await retrieveAccepted(userID);
@@ -216,7 +184,7 @@ export default function Dashboard() {
             </button>
           </div>
           <button
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
+            className="flex h-12 w-full items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
             onClick={async () => {
               console.log(userFamilies);
             }}
@@ -225,6 +193,20 @@ export default function Dashboard() {
           </button>
         </div>
       </main>
+      {/*Aside on the right bar (white space)*/}
+      <aside className="flex min-h-screen w-120 bg-[white] items-center justify-center">
+        <button className="bg-[#657B97] text-white py-2 px-4 rounded-3xl transition-colors dark:hover:bg-[#556880] disabled:opacity-50 w-[120px] z-10"
+          onClick={async () => {
+            try {
+              console.log("opened inbox")
+            } catch (error) {
+              console.log("Inbox error", error);
+            }
+          }}>
+          Inbox
+        </button>
+        <p className="text-black">Right</p>
+      </aside>
     </div>
   );
 }
