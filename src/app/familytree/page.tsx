@@ -12,10 +12,11 @@ export default function FamilyTreePage() {
   const { people } = usePeople();
   const [showForm, setShowForm] = useState(false);
   const [referencePerson, setReferencePerson] = useState<Person | null>(null);
-  const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
+  const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [editingPerson, setEditingPerson] =  useState<Person | null>(null);
 
+  const selectedPerson = people.find(p => p.id === selectedPersonId) || null;
   const activePerson = selectedPerson || people[0] || null;
 
   const filteredPeople = people.filter((p) => {
@@ -67,7 +68,7 @@ export default function FamilyTreePage() {
   return (
     <div className="flex h-screen">
       <div className="w-3/4 p-10 overflow-y-auto border-r border-gray-200 flex flex-col">
-        <h1 className="text-2xl font-bold mb-6">Family Tree</h1>
+        <h1 className="text-2xl font-bold mb-6 shrink-0">Family Tree</h1>
 
         {people.length === 0 && <p>No people added yet.</p>}
 
@@ -102,8 +103,15 @@ export default function FamilyTreePage() {
             </li>
           ))}
         </ul> */}
-
-        <VisualGraph people={people} activePerson={activePerson} onSelect={setSelectedPerson} onAddRelative={handleAddRelative} />
+        {activePerson ? (
+          <div className="flex-1 flex items-center justify-center">
+            <VisualGraph people={people} activePerson={activePerson} onSelect={(p) => setSelectedPersonId(p.id)} onAddRelative={handleAddRelative} />
+          </div>
+        ) : (
+          <div className="flex-1 flex items-center justify-center">
+            <p className="text-gray-500">Add your first family member to get started.</p>
+          </div>
+        )}        
 
         {showForm && referencePerson && (
           <AddPersonForm 
@@ -113,7 +121,7 @@ export default function FamilyTreePage() {
               setSearchTerm(""); // Clear search to show the new person in the list
               const newPerson = people.find(p => p.id === newId);
               if (newPerson) {
-                setSelectedPerson(newPerson);
+                setSelectedPersonId(newPerson.id); // Automatically select the newly added person
               }
             }}
           />
@@ -157,7 +165,7 @@ export default function FamilyTreePage() {
               {filteredPeople.map((p) => (
                 <li 
                   key={p.id} 
-                  onClick={() => setSelectedPerson(p)}
+                  onClick={() => setSelectedPersonId(p.id)}
                   className="p-3 rounded-xl border border-transparent hover:border-gray-100 hover:bg-gray-50 cursor-pointer transition-all"
                 >
                   <div className="font-medium">{p.firstName} {p.lastName}</div>
@@ -172,7 +180,7 @@ export default function FamilyTreePage() {
         {selectedPerson && (
           <div className="h-full">
             <button
-              onClick={() => setSelectedPerson(null)}
+              onClick={() => setSelectedPersonId(null)}
               className="mb-6 px-4 py-2 bg-[#383838] text-white rounded-full hover:bg-[#282828]"
             >
               Back
