@@ -139,8 +139,8 @@ export default function Dashboard() {
               className="flex h-12 w-full items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
               onClick={async () => {
                 try {
-                  const family = await createFamily(inputText, firstName, lastName, userID);
-                  console.log("Succesfully created family:", inputText);
+                  const family = await createFamily(familyName, firstName, lastName, userID);
+                  console.log("Succesfully created family:", familyName);
                   setFamilyCreated(true);
                 } catch (error) {
                   console.error("Failed to create family:", error);
