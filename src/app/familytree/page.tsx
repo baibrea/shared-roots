@@ -7,15 +7,22 @@ import { usePeople } from "@/lib/PeopleContext";
 import { Person } from "@/types/person";
 import FamilyTreeCanvas from "@/components/FamilyTreeCanvas";
 import VisualGraph from "@/components/VisualGraph";
+import SearchBar from "@/components/SearchBar";
 
 export default function FamilyTreePage() {
   const { people } = usePeople();
   const [showForm, setShowForm] = useState(false);
   const [referencePerson, setReferencePerson] = useState<Person | null>(null);
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
   console.log("People loaded: ", people);
 
   const activePerson = selectedPerson || people[0] || null;
+
+  const filteredPeople = people.filter((p) => {
+    const fullName = (p.firstName + " " + p.lastName).toLowerCase();
+    return fullName.includes(searchTerm.toLowerCase());
+  });
 
   const handleAddRelative = (p: Person) => {
     setReferencePerson(p);
@@ -96,22 +103,48 @@ export default function FamilyTreePage() {
       <div className="w-1/4 p-10">
         {/* UI when no family member is selected */}
         {!selectedPerson && (
-          <div>
-          <strong>
-            <p>family members!</p>
-          </strong>
+          // <div>
+          // <strong>
+          //   <p>family members!</p>
+          // </strong>
 
-          <ul>
-            {people.map((p) => (
-              <li 
-              key={p.id} 
-              onClick={() => setSelectedPerson(p)}
-              className="cursor-pointer"
-              >
-                {p.firstName} {p.lastName}
-              </li>
-            ))}
-          </ul>
+          // <ul>
+          //   {people.map((p) => (
+          //     <li 
+          //     key={p.id} 
+          //     onClick={() => setSelectedPerson(p)}
+          //     className="cursor-pointer"
+          //     >
+          //       {p.firstName} {p.lastName}
+          //     </li>
+          //   ))}
+          // </ul>
+          // </div>
+          <div className="flex flex-col h-full">
+            <h2 className="text-xl font-bold mb-4">Directory</h2>
+            
+            {/* New Component Integrated Here */}
+            <SearchBar 
+              value={searchTerm} 
+              onChange={setSearchTerm} 
+            />
+
+            <p className="text-[10px] font-bold uppercase tracking-widest text-gray-400 mb-3">
+              {searchTerm ? "Search Results" : "All Members"}
+            </p>
+
+            <ul className="space-y-2 overflow-y-auto">
+              {filteredPeople.map((p) => (
+                <li 
+                  key={p.id} 
+                  onClick={() => setSelectedPerson(p)}
+                  className="p-3 rounded-xl border border-transparent hover:border-gray-100 hover:bg-gray-50 cursor-pointer transition-all"
+                >
+                  <div className="font-medium">{p.firstName} {p.lastName}</div>
+                  <div className="text-xs text-gray-400">{p.birthDate?.split('-')[0] || "---"}</div>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
 
