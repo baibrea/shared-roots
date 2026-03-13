@@ -1,12 +1,12 @@
 "use client";
 
-import Link from "next/link";
 import { useState } from "react";
 import AddPersonForm from "@/lib/AddPersonForm";
 import { usePeople } from "@/lib/PeopleContext";
 import { Person } from "@/types/person";
 import VisualGraph from "@/components/VisualGraph";
 import SearchBar from "@/components/SearchBar";
+import UpdatePersonForm from "@/lib/UpdatePersonForm";
 
 export default function FamilyTreePage() {
   const { people } = usePeople();
@@ -14,7 +14,7 @@ export default function FamilyTreePage() {
   const [referencePerson, setReferencePerson] = useState<Person | null>(null);
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
-  console.log("People loaded: ", people);
+  const [editingPerson, setEditingPerson] =  useState<Person | null>(null);
 
   const activePerson = selectedPerson || people[0] || null;
 
@@ -170,7 +170,7 @@ export default function FamilyTreePage() {
 
         {/* UI when a family member is selected */}
         {selectedPerson && (
-          <div className="h-full overflow-y-auto">
+          <div className="h-full">
             <button
               onClick={() => setSelectedPerson(null)}
               className="mb-6 px-4 py-2 bg-[#383838] text-white rounded-full hover:bg-[#282828]"
@@ -236,7 +236,23 @@ export default function FamilyTreePage() {
               </div>
               
             </div>
+            {/* Button to modify family member profile */}
+            <button
+              onClick={() => setEditingPerson(selectedPerson)}
+              className="mt-6 px-4 py-2 bg-[#383838] text-white rounded-full hover:bg-[#282828]"
+            >
+              Edit {selectedPerson.firstName}
+            </button>
+
+            {editingPerson && (
+              <UpdatePersonForm
+                person={editingPerson}
+                onClose={() => setEditingPerson(null)}
+              />
+            )}
+
           </div>
+
         )}
       </div>
     </div>

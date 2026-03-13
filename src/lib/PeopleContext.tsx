@@ -13,6 +13,10 @@ type PeopleContextType = {
     referencePerson?: Person,
     relationship?: string
   ) => Promise<string | undefined>;
+  updatePerson: (
+    personId: string, 
+    updatedData: Partial<Person>
+  ) => Promise<void>;
 };
 
 const PeopleContext = createContext<PeopleContextType | null>(null);
@@ -170,8 +174,25 @@ export function PeopleProvider({ children }: { children: React.ReactNode }) {
     }
   }
 
+  async function updatePerson(personId: string, updatedData: Partial<Person>) {
+    if (!user) return;
+
+    const userRef = doc(db, "users", user.uid);
+    const userSnap = await getDoc(userRef);
+    if (!userSnap.exists()) return;
+
+    const families = userSnap.data().families || [];
+    if (families.length === 0) return;
+
+    const familyId = families[0].id; // Use the first family temporarily
+
+    const personRef = doc(db, "families", familyId, "people", personId);
+
+    await updateDoc(personRef, updatedData);
+  }
+
   return (
-    <PeopleContext.Provider value={{ people, addPerson }}>
+    <PeopleContext.Provider value={{ people, addPerson, updatePerson }}>
       {children}
     </PeopleContext.Provider>
   );
