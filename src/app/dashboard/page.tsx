@@ -53,6 +53,7 @@ export default function Dashboard() {
     <div className="flex min-h-screen bg-zinc-50 font-sans dark:bg-[#FFFFFF]">
       <meta name="viewport" content="width=device-width, initial-scale=1"/>
       <aside className="flex flex-col min-h-screen w-60 bg-[#657B97] items-center justify-center gap-4 justify-start py-10">
+        {/*TODO: Add Shared Roots Logo*/}
         <Image
           className="dark:invert "
           src="/next.svg"
@@ -83,24 +84,30 @@ export default function Dashboard() {
           )}
           {/*End Conditional Family Messages*/}
 
-          <h1 className="max-w-s text-3xl font-semibold leading-10 tracking-tight text-black">
-            Welcome to Shared Roots.
-          </h1> 
-          <p className="max-w-md text-lg leading-8 text-black">
-            Greetings {firstName} {lastName}!
-          </p>
+          {/*Greeting card*/}
+          <div className="flex max-w-2xl flex-col gap-4 bg-[#657B97] p-10 rounded-lg justify-center items-center ml-90">
+            <div className="flex flex-row items-center gap-4">
+              <h1 className="max-w-s text-3xl font-semibold leading-10 tracking-tight text-black">
+                Welcome to Shared Roots.
+              </h1>
+              <Image
+              src="/avatar-girl-svgrepo-com.svg"
+              alt="Inbox"
+              width={200}
+              height={200}
+              priority
+              />
+            </div>
+              <p className="max-w-md text-lg leading-8 text-black">
+                Greetings {firstName} {lastName}!
+              </p>
+          </div>
+
         </div>
         <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
           <Link href="/familytree" className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#657B97] px-5 text-white transition-colors dark:hover:bg-[#556880] md:w-[158px]">
             Family Tree
-          </Link>
-          <button
-              type="submit"
-              className="w-full bg-[#657B97] text-white py-2 my-1 rounded-3xl transition-colors dark:hover:bg-[#556880]"
-              onClick={() => logOut(router)}
-              >
-              Sign Out
-          </button>          
+          </Link>   
         </div>
         <div className="flex flex-col gap-4 w-full">
           <input
@@ -193,19 +200,48 @@ export default function Dashboard() {
           </button>
         </div>
       </main>
-      {/*Aside on the right bar (white space)*/}
-      <aside className="flex min-h-screen w-120 bg-[white] items-center justify-center">
-        <button className="bg-[#657B97] text-white py-2 px-4 rounded-3xl transition-colors dark:hover:bg-[#556880] disabled:opacity-50 w-[120px] z-10"
-          onClick={async () => {
-            try {
-              console.log("opened inbox")
-            } catch (error) {
-              console.log("Inbox error", error);
-            }
-          }}>
-          Inbox
-        </button>
-        <p className="text-black">Right</p>
+      
+      <aside className="flex flex-col min-h-screen w-120 bg-[white] items-center pt-10 pb-10">
+          {/* Top row: avatar, name, inbox */}
+          <div className="flex flex-row items-center gap-4">
+            {/*TODO: Implement avatar retrievel from database*/}
+            <Image
+              src="/avatar-girl-svgrepo-com.svg"
+              alt="Inbox"
+              width={80}
+              height={80}
+              priority
+            />
+            <p className="max-w-md text-lg leading-20 text-black">
+              <strong>{firstName} {lastName}</strong>
+            </p>
+            {/*TODO: Add Dropdown View Profile*/}
+            <button className="bg-[#657B97] text-white py-2 px-9 rounded-3xl transition-colors dark:hover:bg-[#556880] disabled:opacity-50 w-[110px] h-[50px]"
+              onClick={async () => {
+                try {
+                  console.log("opened inbox")
+                } catch (error) {
+                  console.log("Inbox error", error);
+                }
+              }}>
+              <Image
+                className="dark:invert"
+                src="/mail-svgrepo-com.svg"
+                alt="Inbox"
+                width={50}
+                height={50}
+                priority
+              />
+            </button>
+          </div>
+
+          <button
+              type="submit"
+              className="mt-auto w-[160px] bg-[#657B97] text-white py-2 rounded-3xl transition-colors dark:hover:bg-[#556880]"
+              onClick={() => logOut(router)}
+              >
+              Sign Out
+          </button>
       </aside>
     </div>
   );
