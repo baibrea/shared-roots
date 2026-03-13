@@ -12,6 +12,26 @@ export default function FamilyTreePage() {
   const [referencePerson, setReferencePerson] = useState<Person | null>(null);
   console.log("People loaded: ", people);
 
+  function getPersonName(id: string | undefined) {
+    if (!id) return "Unknown";
+
+    const person = people.find((p) => p.id === id);
+
+    if (!person) return "Unknown";
+
+    return person.firstName + " " + person.lastName;
+  }
+
+  function getPeopleNames(ids: string[] | undefined) {
+    if (!ids || ids.length === 0) return "Unknown";
+
+    const names = ids.map((id) => {
+      const person = people.find((p) => p.id === id);
+      return person ? person.firstName + " " + person.lastName : "Unknown";
+    });
+    return names.join(", ");
+  }
+
   return (
     <div className="p-10 ">
       <h1 className="text-2xl font-bold mb-6">Family Tree</h1>
@@ -30,9 +50,9 @@ export default function FamilyTreePage() {
             <p>Title: {p.title || "Unknown"}</p>
             <p>Bio: {p.bio || "Unknown"}</p>
             <p>Health Details: {p.healthDetails || "Unknown"}</p>
-            <p>Parents: {p.parents?.length ? p.parents.join(", ") : "Unknown"}</p>
-            <p>Children: {p.children?.length ? p.children.join(", ") : "Unknown"}</p>
-            <p>Spouse: {p.spouse ?? "Unknown"}</p>
+            <p>Parents: {getPeopleNames(p.parents)}</p>
+            <p>Children: {getPeopleNames(p.children)}</p>
+            <p>Spouse: {getPersonName(p.spouse)}</p>
 
             <button
               onClick={() => {
