@@ -8,10 +8,12 @@ import { doc } from "firebase/firestore";
 
 export default function AddPersonForm({ 
   onClose,
-  referencePerson
+  referencePerson,
+  onPersonAdded
  }: {
   onClose : () => void;
   referencePerson: Person;
+  onPersonAdded: (personId: string) => void;
 }) {
     const { addPerson } = usePeople();
 
@@ -39,7 +41,11 @@ export default function AddPersonForm({
             ...formData,
         } as Person;
 
-        addPerson(newPerson, referencePerson, relationship);
+        const newId = await addPerson(newPerson, referencePerson, relationship);
+
+        if (newId) {
+            onPersonAdded(newId);
+        }
 
         setFormData({ firstName: '', 
             lastName: '', 

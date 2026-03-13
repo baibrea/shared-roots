@@ -5,7 +5,6 @@ import { useState } from "react";
 import AddPersonForm from "@/lib/AddPersonForm";
 import { usePeople } from "@/lib/PeopleContext";
 import { Person } from "@/types/person";
-import FamilyTreeCanvas from "@/components/FamilyTreeCanvas";
 import VisualGraph from "@/components/VisualGraph";
 import SearchBar from "@/components/SearchBar";
 
@@ -88,14 +87,19 @@ export default function FamilyTreePage() {
           ))}
         </ul> */}
 
-        {/* <FamilyTreeCanvas people={people} /> */}
-
         <VisualGraph people={people} activePerson={activePerson} onSelect={setSelectedPerson} onAddRelative={handleAddRelative} />
 
         {showForm && referencePerson && (
           <AddPersonForm 
             onClose={() => setShowForm(false)} 
             referencePerson={referencePerson} 
+            onPersonAdded={(newId) => {
+              setSearchTerm(""); // Clear search to show the new person in the list
+              const newPerson = people.find(p => p.id === newId);
+              if (newPerson) {
+                setSelectedPerson(newPerson);
+              }
+            }}
           />
         )}
 

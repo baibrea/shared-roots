@@ -12,7 +12,7 @@ type PeopleContextType = {
     person: Person,
     referencePerson?: Person,
     relationship?: string
-  ) => Promise<void>;
+  ) => Promise<string | undefined>;
 };
 
 const PeopleContext = createContext<PeopleContextType | null>(null);
@@ -72,7 +72,7 @@ export function PeopleProvider({ children }: { children: React.ReactNode }) {
     person: Person,
     referencePerson?: Person,
     relationship?: string
-  ) {
+  ): Promise<string | undefined> {
 
     if (!user) {
       return;
@@ -164,6 +164,7 @@ export function PeopleProvider({ children }: { children: React.ReactNode }) {
           }
         }
       }
+      return newId;
     } catch (error) {
       console.error("Error adding person and/or updating relationships: ", error);
     }
