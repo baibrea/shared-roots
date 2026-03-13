@@ -101,36 +101,36 @@ export function PeopleProvider({ children }: { children: React.ReactNode }) {
     try {
       const peopleCollection = collection(db, "families", familyId, "people");
 
+      // If a person is a child of the reference person, set the parents field to reference that person
       if (relationship === "child" && referencePerson) {
-        const parents = [referencePerson.id];
+        person.parents = [referencePerson.id];
+        // If the reference person has a spouse, set that spouse as a parent for the new child
         if(referencePerson.spouse) {
-          parents.push(referencePerson.spouse);
+          person.parents.push(referencePerson.spouse);
         }
-        person.parents = parents;
       }
-
-      if (relationship === "parent" && referencePerson) {
+      // Else if a person is a parent of the reference person, set the children field to reference that person
+      else if (relationship === "parent" && referencePerson) {
         person.children = [referencePerson.id];
+        // If the reference person has existing parents, assume new parent is spouse and link them together
         if(referencePerson.parents && referencePerson.parents.length > 0) {
           person.spouse = referencePerson.parents[0]; // Assume the first parent is the spouse for simplicity
         }
       }
-
-      if (relationship === "spouse" && referencePerson) {
+      // Else if a person is a spouse of the reference person, set the spouse field to reference that person and link their children if they have any
+      else if (relationship === "spouse" && referencePerson) {
         person.spouse = referencePerson.id;
         person.children = referencePerson.children || [];
       }
 
       const docRef = await addDoc(peopleCollection, person);
       console.log("Added person", person);
-
       const newId = docRef.id;
 
       if (referencePerson) {
         const referenceRef = doc(db, "families", familyId, "people", referencePerson.id);
-
+        // If the new person is a child, update the reference person to add this new child.
         if (relationship === "child") {
-          // Update the reference person to add this new child
           await updateDoc(referenceRef, {
             children: arrayUnion(newId),
           });
@@ -140,11 +140,11 @@ export function PeopleProvider({ children }: { children: React.ReactNode }) {
             await updateDoc(spouseRef, { children: arrayUnion(newId) });
           }
         }
-
-        if (relationship === "parent") {
+        // Else if the new person is a parent, update the reference person to add this new parent. 
+        else if (relationship === "parent") {
           // Update the reference person to add this new parent
           await updateDoc(referenceRef, {
-            children: arrayUnion(newId),
+            parents: arrayUnion(newId),
           });
           // If the reference person has existing parents, assume new parent is spouse 
           // and update the existing parent to link to the new spouse
@@ -153,8 +153,8 @@ export function PeopleProvider({ children }: { children: React.ReactNode }) {
             await updateDoc(existingParentRef, { spouse: newId });
           }
         }
-
-        if (relationship === "spouse") {
+        // Else if the new person is a spouse, update the reference person to add this new spouse.
+        else if (relationship === "spouse") {
           // Update the reference person to add this new spouse
           await updateDoc(referenceRef, {
             spouse: newId,
