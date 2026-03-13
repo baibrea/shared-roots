@@ -3,9 +3,19 @@
 import { useState } from "react";
 import { Person } from "@/types/person";
 import { usePeople } from "./PeopleContext";
+import { db } from "./firebase";
+import { doc } from "firebase/firestore";
 
-export default function AddPersonForm({ onClose }: { onClose : () => void}) {
+export default function AddPersonForm({ 
+  onClose,
+  referencePerson
+ }: {
+  onClose : () => void;
+  referencePerson: Person;
+}) {
     const { addPerson } = usePeople();
+
+    const [relationship, setRelationship] = useState("child");
 
     const [formData, setFormData] = useState<Partial<Person>>({
         firstName: '',
@@ -22,14 +32,14 @@ export default function AddPersonForm({ onClose }: { onClose : () => void}) {
 
     const isFormValid = formData.firstName?.trim() && formData.lastName?.trim();
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
 
         const newPerson: Person = {
             ...formData,
         } as Person;
 
-        addPerson(newPerson);
+        addPerson(newPerson, referencePerson, relationship);
 
         setFormData({ firstName: '', 
             lastName: '', 
@@ -55,6 +65,19 @@ export default function AddPersonForm({ onClose }: { onClose : () => void}) {
           <h1 className="text-xl font-bold text-center">
             Add New Family Member
           </h1>
+
+          <p>Relationship to 
+            <strong> {referencePerson.firstName} {referencePerson.lastName}:</strong>
+          </p>
+          <select
+            value={relationship}
+            onChange={(e) => setRelationship(e.target.value)}
+            className="border rounded-xl px-3 py-2"
+          >
+            <option value="child">Child</option>
+            <option value="parent">Parent</option>
+            <option value="spouse">Spouse</option>
+          </select>
 
           <input
             required

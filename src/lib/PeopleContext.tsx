@@ -2,13 +2,17 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { Person } from "@/types/person";
-import { addDoc, collection, doc, getDoc, onSnapshot } from "firebase/firestore";
+import { addDoc, arrayUnion, collection, doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { getAuth, onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
 
 type PeopleContextType = {
   people: Person[];
-  addPerson: (person: Person) => void;
+  addPerson: (
+    person: Person,
+    referencePerson?: Person,
+    relationship?: string
+  ) => Promise<void>;
 };
 
 const PeopleContext = createContext<PeopleContextType | null>(null);
@@ -64,7 +68,12 @@ export function PeopleProvider({ children }: { children: React.ReactNode }) {
   }, [user]);
 
   // Add a new family member to the "people" subcollection
-  async function addPerson(person: Person) {
+  async function addPerson(
+    person: Person,
+    referencePerson?: Person,
+    relationship?: string
+  ) {
+
     if (!user) {
       return;
     }
@@ -86,10 +95,46 @@ export function PeopleProvider({ children }: { children: React.ReactNode }) {
     const familyId = families[0].id; // Use the first family temporarily
 
     try {
-      await addDoc(collection(db, "families", familyId, "people"), person);
+      if (relationship === "child" && referencePerson) {
+        person.parents = [referencePerson.id];
+      }
+
+      if (relationship === "parent" && referencePerson) {
+        person.children = [referencePerson.id];
+      }
+
+      if (relationship === "spouse" && referencePerson) {
+        person.spouse = referencePerson.id;
+      }
+
+      const docRef = await addDoc(collection(db, "families", familyId, "people"), person);
       console.log("Added person", person);
+
+      const newId = docRef.id;
+
+      if (referencePerson) {
+        const referenceRef = doc(db, "families", familyId, "people", referencePerson.id);
+
+        if (relationship === "child") {
+          await updateDoc(referenceRef, {
+            children: arrayUnion(newId),
+          });
+        }
+
+        if (relationship === "parent") {
+          await updateDoc(referenceRef, {
+            children: arrayUnion(newId),
+          });
+        }
+
+        if (relationship === "spouse") {
+          await updateDoc(referenceRef, {
+            spouse: newId,
+          });
+        }
+      }
     } catch (error) {
-      console.error("Error adding person", error);
+      console.error(error);
     }
   }
 

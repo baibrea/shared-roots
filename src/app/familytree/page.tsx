@@ -4,10 +4,12 @@ import Link from "next/link";
 import { useState } from "react";
 import AddPersonForm from "@/lib/AddPersonForm";
 import { usePeople } from "@/lib/PeopleContext";
+import { Person } from "@/types/person";
 
 export default function FamilyTreePage() {
   const { people } = usePeople();
   const [showForm, setShowForm] = useState(false);
+  const [referencePerson, setReferencePerson] = useState<Person | null>(null);
   console.log("People loaded: ", people);
 
   return (
@@ -31,18 +33,26 @@ export default function FamilyTreePage() {
             <p>Parents: {p.parents?.length ? p.parents.join(", ") : "Unknown"}</p>
             <p>Children: {p.children?.length ? p.children.join(", ") : "Unknown"}</p>
             <p>Spouse: {p.spouse ?? "Unknown"}</p>
+
+            <button
+              onClick={() => {
+                setReferencePerson(p);
+                setShowForm(true);
+              }}
+              className="mt-2 px-3 py-1 bg-[#383838] text-white rounded-full hover:bg-[#282828]"
+            >
+              +
+            </button>
           </li>
         ))}
       </ul>
 
-      <button
-        onClick={() => setShowForm(true)}
-        className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-white text-black px-5 mt-5 hover:bg-[#383838] md:w-[200px]"
-      >
-        Add Family Member
-      </button>
-
-      {showForm && <AddPersonForm onClose={() => setShowForm(false)} />}
+      {showForm && referencePerson && (
+        <AddPersonForm 
+          onClose={() => setShowForm(false)} 
+          referencePerson={referencePerson} 
+        />
+      )}
 
     </div>
   );
