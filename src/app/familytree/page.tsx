@@ -67,7 +67,7 @@ export default function FamilyTreePage() {
 
   return (
     <div className="flex h-screen">
-      <div className="w-3/4 p-10 overflow-y-auto border-r border-gray-200 flex flex-col">
+      <div className="w-3/4 p-10 overflow-y-auto bg-[#393939] border-r border-gray-200 flex flex-col">
         <h1 className="text-2xl font-bold mb-6 shrink-0">Family Tree</h1>
 
         {people.length === 0 && <p>No people added yet.</p>}
@@ -100,7 +100,7 @@ export default function FamilyTreePage() {
         )}
 
       </div>
-      <div className="w-1/4 p-10">
+      <div className="w-1/4 p-10 bg-[#E9E9E9] text-black">
         {/* UI when no family member is selected */}
         {!selectedPerson && (
           <div className="flex flex-col h-full">
@@ -142,27 +142,27 @@ export default function FamilyTreePage() {
             </button>
 
             <div className="text-center mb-8">
-              <div className="py-30">
+              <div className="py-30 bg-[#B5B5B5] rounded-2xl mb-10">
                 image
               </div>
 
-              <h2 className="text-m text-gray-400">
-                <strong className="text-xl text-white">
-                  {selectedPerson.firstName} {selectedPerson.lastName},
+              <h2 className="text-m">
+                <strong className="text-xl ">
+                  {selectedPerson.firstName} {selectedPerson.lastName}
                 </strong>
                 {selectedPerson.birthDate
-                  ? ` ${getAge(selectedPerson.birthDate)}`
+                  ? `, ${getAge(selectedPerson.birthDate)}`
                   : ""}
               </h2>
-              <p className="text-gray-300">
+              <p className="">
                 {selectedPerson.birthDate || "Unknown"}
               </p>
 
-              <p className="text-gray-300">
+              <p className="">
                 {selectedPerson.birthLocation || "Unknown"}
               </p>
 
-              <p className="text-gray-300" >
+              <p className="" >
                   Title: {selectedPerson.title || "Unknown"}
               </p>
 
@@ -170,7 +170,7 @@ export default function FamilyTreePage() {
 
             <div className="mb-8">
               <h3 className="font-semibold mb-2 text-lg">Bio</h3>
-              <p className="text-gray-300">
+              <p className="">
                 {selectedPerson.bio || "No bio created yet."}
               </p>
             </div>
