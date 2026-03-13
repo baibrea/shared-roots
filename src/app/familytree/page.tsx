@@ -5,6 +5,8 @@ import { useState } from "react";
 import AddPersonForm from "@/lib/AddPersonForm";
 import { usePeople } from "@/lib/PeopleContext";
 import { Person } from "@/types/person";
+import FamilyTreeCanvas from "@/components/FamilyTreeCanvas";
+import VisualGraph from "@/components/VisualGraph";
 
 export default function FamilyTreePage() {
   const { people } = usePeople();
@@ -12,6 +14,13 @@ export default function FamilyTreePage() {
   const [referencePerson, setReferencePerson] = useState<Person | null>(null);
   const [selectedPerson, setSelectedPerson] = useState<Person | null>(null);
   console.log("People loaded: ", people);
+
+  const activePerson = selectedPerson || people[0] || null;
+
+  const handleAddRelative = (p: Person) => {
+    setReferencePerson(p);
+    setShowForm(true);
+  }
 
   function getPersonName(id: string | undefined) {
     if (!id) return "Unknown";
@@ -35,12 +44,12 @@ export default function FamilyTreePage() {
 
   return (
     <div className="flex h-screen">
-      <div className="w-3/4 p-10 overflow-y-auto border-r">
+      <div className="w-3/4 p-10 overflow-y-auto border-r border-gray-200 flex flex-col">
         <h1 className="text-2xl font-bold mb-6">Family Tree</h1>
 
         {people.length === 0 && <p>No people added yet.</p>}
 
-        <ul className="space-y-4">
+        {/* <ul className="space-y-4">
           {people.map((p) => (
             <li 
               key={p.id} 
@@ -70,7 +79,11 @@ export default function FamilyTreePage() {
               </button>
             </li>
           ))}
-        </ul>
+        </ul> */}
+
+        {/* <FamilyTreeCanvas people={people} /> */}
+
+        <VisualGraph people={people} activePerson={activePerson} onSelect={setSelectedPerson} onAddRelative={handleAddRelative} />
 
         {showForm && referencePerson && (
           <AddPersonForm 
