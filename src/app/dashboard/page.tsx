@@ -9,6 +9,7 @@ import { logOut } from "@/lib/auth";
 import { auth, db } from "@/lib/firebase";
 import { createFamily } from "@/lib/family";
 import { sendInvite, acceptInvite, retrievePending, retrieveAccepted } from "@/lib/inbox";
+import Inbox from "@/components/Inbox";
 
 export default function Dashboard() {
     // Declares User Information Variables
@@ -24,6 +25,9 @@ export default function Dashboard() {
     const [familyCreated, setFamilyCreated] = useState(false);
     const [familyJoined, setFamilyJoined] = useState(false);
     const [familyJoinFailed, setFamilyJoinFailed] = useState(false);
+
+    // Inbox
+    const [showInbox, setShowInbox] = useState(false);
 
     // Router for redirecting
     const router = useRouter();
@@ -67,6 +71,13 @@ export default function Dashboard() {
       </aside>
       <main className="flex min-h-screen w-full max-w-7xl flex-col items-center justify-between py-32 px-16 bg-[#DDE7F4] sm:items-start">
         <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
+          {
+            showInbox && (
+            <Inbox 
+              uid={userID}
+              onClose={() => setShowInbox(false)} 
+            />
+          )}
 
           {/*Conditional Family creation/join success/fail messages*/}
           {familyCreated && (
@@ -219,7 +230,6 @@ export default function Dashboard() {
       </main>
       
       <aside className="flex flex-col min-h-screen w-120 bg-[white] items-center pt-10 pb-10">
-          {/* Top row: avatar, name, inbox */}
           <div className="flex flex-row items-center gap-4">
             {/*TODO: Implement avatar retrievel from database*/}
             <Image
@@ -237,8 +247,10 @@ export default function Dashboard() {
               onClick={async () => {
                 try {
                   console.log("opened inbox")
+                  setShowInbox(true);
                 } catch (error) {
                   console.log("Inbox error", error);
+                  setShowInbox(false);
                 }
               }}>
               <Image

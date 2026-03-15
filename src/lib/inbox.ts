@@ -3,7 +3,7 @@ import { db } from "@/lib/firebase";
 import { joinFamily } from "@/lib/family";
 
 // Interface to act as a struct for invites
-interface Invitation {
+export interface Invitation {
     inviteId: string;
     familyName: string;
     familyID: string;
