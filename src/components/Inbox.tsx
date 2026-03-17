@@ -1,20 +1,26 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { sendInvite, acceptInvite, retrievePending, retrieveAccepted } from "@/lib/inbox";
 import { Invitation } from "@/lib/inbox";
+import { getDoc, DocumentReference } from "firebase/firestore";
 import { Send } from "lucide-react";
+import { on } from "events";
 
 export default function Inbox({
+    docRef,
     uid,
     families,
     firstName,
     lastName,
-    onClose
+    onClose,
+    onFamiliesUpdate
 }: {
+    docRef: DocumentReference;
     uid: string;
     families: { id: string; name: string }[];
     firstName: string;
     lastName: string;
-    onClose: () => void;
+    onClose: (returnValue: boolean) => void;
+    onFamiliesUpdate: (families: { id: string; name: string }[]) => void;
 }) {
     const [inboxView, setInboxView] = useState<"pending" | "archived" | "invite">("pending");
     const [inviteMessage, setInviteMessage] = useState("");
@@ -25,6 +31,19 @@ export default function Inbox({
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState(false);
     const [acceptedInvite, setAcceptedInvite] = useState(false);
+
+    // Retrieves pending invites on start - Inbox starts on pending window
+    useEffect(() => {
+        const initPending = async () => {
+            try {
+                const pendingInvites = await retrievePending(uid);
+                setInvites(pendingInvites);
+            } catch (error) {
+                console.error("Failed to retrieve pending invites:", error);
+            }
+        };
+        initPending();
+    }, [uid]);
 
     // Sending Invitation Logic
     const handleSendInvite = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -43,12 +62,28 @@ export default function Inbox({
 
     return (
         <div className="flex min-h-screen fixed inset-0 flex items-center justify-center bg-black/40 z-50">
-            <div className="flex flex-col w-full h-150 max-w-md p-8 rounded-3xl bg-[#f9f8f4] shadow-xl text-[#3A433A] gap-4 overflow-y-auto">
+            <div className="flex flex-col w-full h-150 max-w-md p-8 rounded-3xl bg-[#f9f8f4] shadow-xl text-[#3A433A] gap-4 overflow-y-auto
+                [&::-webkit-scrollbar]:w-2
+                [&::-webkit-scrollbar-thumb]:bg-gray-400
+                [&::-webkit-scrollbar-thumb:hover]:bg-gray-500"
+            >
                 <div className="flex flex-row justify-end gap-40">
                     <h1 className="text-2xl font-bold mb-4">Inbox</h1>    
                     <button
                         type="button"
-                        onClick={onClose}
+                        onClick={async () => {
+                            try {
+                                const pendingInvites = await retrievePending(uid);
+                                if (pendingInvites.length === 0) {
+                                    onClose(false);
+                                } else {
+                                    onClose(true);
+                                }
+                            } catch (error) {
+                                onClose(false);
+                                console.error("Failed to retrieve pending invites:", error);
+                            }
+                        }}
                         className="flex h-12 w-full items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
                     >
                         Close Inbox
@@ -118,9 +153,9 @@ export default function Inbox({
                     </p>
                 )}
 
-                {error && inboxView === "pending" &&(
+                {error && inboxView === "pending" && !acceptedInvite &&(
                     <p className="bg-red-200 text-red-800 p-2 rounded mb-4">
-                    <b>Failed to load pending invite.</b>
+                    <b>Failed to load pending invites.</b>
                     </p>
                 )}
 
@@ -130,7 +165,7 @@ export default function Inbox({
                     </p>
                 )}
 
-                {error && inboxView === "archived" && acceptedInvite &&(
+                {error && inboxView === "pending" && acceptedInvite &&(
                     <p className="bg-red-200 text-red-800 p-2 rounded mb-4">
                     <b>Failed to accept invite.</b>
                     </p>
@@ -155,6 +190,36 @@ export default function Inbox({
                                     <p><strong>From:</strong> {invite.name}</p>
                                     <p><strong>Message:</strong> {invite.message}</p>
                                     <p><strong>Status:</strong> {invite.status}</p>
+                                    <button
+                                    className="flex h-12 w-full items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
+                                    onClick={async () => {
+                                        try {
+                                            await acceptInvite(invite.inviteId, invite.familyID, firstName, lastName, uid);
+                                            setAcceptedInvite(true);
+                                            setSuccess(true);
+                                            setError(false);
+
+                                            // Refresh pending invites after accepting
+                                            const pending = await retrievePending(uid);
+                                            setInvites(pending);
+                                            
+                                            // Updates families in parent
+                                            const docSnap = await getDoc(docRef);
+                                            const data = docSnap.data();
+                                            if (data) {
+                                                onFamiliesUpdate(data.families.map((f: { id: string; name: string }) => ({ id: f.id, name: f.name })));
+                                            }
+
+                                        } catch (error) {
+                                            console.error("Failed to accept invite:", error);
+                                            setAcceptedInvite(true);
+                                            setSuccess(false);
+                                            setError(true);
+                                        }
+                                    }}
+                                    >
+                                    Accept Invite
+                                    </button>
                                 </div>
                             ))
                         )}

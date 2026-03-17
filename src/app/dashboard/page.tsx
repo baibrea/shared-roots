@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged} from "firebase/auth";
-import { doc, DocumentData, getDoc } from "firebase/firestore";
+import { doc, DocumentData, DocumentReference, getDoc } from "firebase/firestore";
 import { logOut } from "@/lib/auth";
 import { auth, db } from "@/lib/firebase";
 import { createFamily } from "@/lib/family";
@@ -88,11 +88,22 @@ export default function Dashboard() {
           {
             showInbox && (
             <Inbox 
+              docRef={doc(db, "users", userID)}
               uid={userID}
               families={userFamilies?.map(family => ({ id: family.id, name: family.name })) || []}
               firstName={firstName}
               lastName={lastName}
-              onClose={() => setShowInbox(false)} 
+              onClose={(returnValue: boolean) => {
+                setShowInbox(false);
+
+                // Hides alerts if pending invites are cleared
+                if (returnValue) {
+                  setHasPending(true);
+                } else {
+                  setHasPending(false);
+                }
+              }}
+              onFamiliesUpdate={(newFamilies) => setUserFamilies(newFamilies)} 
             />
           )}
 
@@ -170,6 +181,9 @@ export default function Dashboard() {
                   const family = await createFamily(familyName, firstName, lastName, userID);
                   console.log("Succesfully created family:", familyName);
                   setFamilyCreated(true);
+
+                  // Update userFamilies state to include the newly created family
+                  setUserFamilies(families => [...(families || []), { id: family, name: familyName }]);
                 } catch (error) {
                   console.error("Failed to create family:", error);
                   setFamilyCreated(false);
@@ -270,17 +284,19 @@ export default function Dashboard() {
                   setShowInbox(false);
                 }
               }}>
-              <Image
-                className="dark:invert"
-                src="/mail-svgrepo-com.svg"
-                alt="Inbox"
-                width={50}
-                height={50}
-                priority
-              />
-              {hasPending && (
-                <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full"/>
-              )}
+              <span className="relative inline-block">
+                <Image
+                  className="dark:invert"
+                  src="/mail-svgrepo-com.svg"
+                  alt="Inbox"
+                  width={50}
+                  height={50}
+                  priority
+                />
+                {hasPending && (
+                  <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 bg-red-600 rounded-full h-5 w-5"/>
+                )}
+              </span>
             </button>
           </div>
 
