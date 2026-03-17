@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged} from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, DocumentData, getDoc } from "firebase/firestore";
 import { logOut } from "@/lib/auth";
 import { auth, db } from "@/lib/firebase";
 import { createFamily } from "@/lib/family";
@@ -19,7 +19,7 @@ export default function Dashboard() {
     const [inputText, setInputText] = useState("");
     const [familyId, setFamilyId] = useState("");
     const [familyName, setFamilyName] = useState("");
-    const [userFamilies, setUserFamilies] = useState([]);
+    const [userFamilies, setUserFamilies] = useState<DocumentData[]>();
 
     // Family Booleans
     const [familyCreated, setFamilyCreated] = useState(false);
@@ -28,6 +28,7 @@ export default function Dashboard() {
 
     // Inbox
     const [showInbox, setShowInbox] = useState(false);
+    const [hasPending, setHasPending] = useState(false);
 
     // Router for redirecting
     const router = useRouter();
@@ -47,6 +48,19 @@ export default function Dashboard() {
                 setLastName(data.lastName);
                 setUserID(data.uid);
                 setUserFamilies(data.families);
+
+                // Check for pending invites
+                try {
+                  const pendingInvites = await retrievePending(data.uid);
+                  if (pendingInvites.length > 0) {
+                    setHasPending(true);
+                  } else {
+                    setHasPending(false);
+                  }
+                } catch (error) {
+                  console.error("Failed to retrieve pending invites:", error);
+                  setHasPending(false);
+                }
             }
         }
       });
@@ -75,6 +89,9 @@ export default function Dashboard() {
             showInbox && (
             <Inbox 
               uid={userID}
+              families={userFamilies?.map(family => ({ id: family.id, name: family.name })) || []}
+              firstName={firstName}
+              lastName={lastName}
               onClose={() => setShowInbox(false)} 
             />
           )}
@@ -105,7 +122,7 @@ export default function Dashboard() {
               </h1>
               <Image
               src="/avatar-girl-svgrepo-com.svg"
-              alt="Inbox"
+              alt="avatar image"
               width={200}
               height={200}
               priority
@@ -234,7 +251,7 @@ export default function Dashboard() {
             {/*TODO: Implement avatar retrievel from database*/}
             <Image
               src="/avatar-girl-svgrepo-com.svg"
-              alt="Inbox"
+              alt="avatar image"
               width={80}
               height={80}
               priority
@@ -261,6 +278,9 @@ export default function Dashboard() {
                 height={50}
                 priority
               />
+              {hasPending && (
+                <span className="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-red-100 bg-red-600 rounded-full"/>
+              )}
             </button>
           </div>
 
