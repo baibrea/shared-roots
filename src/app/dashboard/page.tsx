@@ -23,8 +23,6 @@ export default function Dashboard() {
 
     // Family Booleans
     const [familyCreated, setFamilyCreated] = useState(false);
-    const [familyJoined, setFamilyJoined] = useState(false);
-    const [familyJoinFailed, setFamilyJoinFailed] = useState(false);
 
     // Inbox
     const [showInbox, setShowInbox] = useState(false);
@@ -107,24 +105,6 @@ export default function Dashboard() {
             />
           )}
 
-          {/*Conditional Family creation/join success/fail messages*/}
-          {familyCreated && (
-            <p className="bg-green-200 text-green-800 p-2 rounded mb-4">
-              <b>{inputText} Family created successfully!</b>
-            </p>
-          )}
-          {familyJoined && (
-            <p className="bg-green-200 text-green-800 p-2 rounded mb-4">
-              <b>{inputText} Family joined successfully!</b>
-            </p>
-          )}
-          {familyJoinFailed && (
-            <p className="bg-red-200 text-red-800 p-2 rounded mb-4">
-              <b>Failed to join {inputText} family.</b>
-            </p>
-          )}
-          {/*End Conditional Family Messages*/}
-
           {/*Greeting card*/}
           <div className="flex max-w-2xl flex-col gap-4 bg-[#657B97] p-10 rounded-lg justify-center items-center ml-90">
             <div className="flex flex-row items-center gap-4">
@@ -151,21 +131,7 @@ export default function Dashboard() {
           </Link>   
         </div>
         <div className="flex flex-col gap-4 w-full">
-          {/*Input Bars*/}
-          <input
-            type="text"
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            placeholder="Enter text here - Destination Email or Invitation Id"
-            className="w-full px-4 py-2 border border-solid border-black/[.08] rounded-full dark:border-white/[.145] dark:bg-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#698b6a]"
-          />
-          <input
-            type="text"
-            value={familyId}
-            onChange={(e) => setFamilyId(e.target.value)}
-            placeholder="Enter family id - Only for invitation acceptance"
-            className="w-full px-4 py-2 border border-solid border-black/[.08] rounded-full dark:border-white/[.145] dark:bg-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#698b6a]"
-          />
+          {/*Input Bar*/}
           <input
             type="text"
             value={familyName}
@@ -191,62 +157,6 @@ export default function Dashboard() {
               }}
             >
               Create Family
-            </button>
-            <button
-              className="flex h-12 w-full items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-              onClick={async () => {
-                try {
-                  await sendInvite("Join my family", familyId, familyName, firstName, lastName, inputText);
-                  console.log("Invite sent to:", inputText);
-                } catch (error) {
-                  console.error("Failed to send invite:", error);
-                }
-              }}
-            >
-              Send Invite
-            </button>
-            <button
-              className="flex h-12 w-full items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-              onClick={async () => {
-                try {
-                  const invites = await retrievePending(userID);
-                  console.log("Pending invites:", invites);
-                } catch (error) {
-                  console.error("Failed to retrieve invites:", error);
-                }
-              }}
-            >
-              View Invites
-            </button>
-            <button
-              className="flex h-12 w-full items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-              onClick={async () => {
-                try {
-                  await acceptInvite(inputText, familyName, firstName, lastName, userID);
-                  setFamilyJoined(true);
-                  setFamilyJoinFailed(false);
-                  console.log("Accepted invite:", inputText);
-                } catch (error) {
-                  setFamilyJoined(false);
-                  setFamilyJoinFailed(true);
-                  console.error("Failed to accept invite:", error);
-                }
-              }}
-            >
-              Accept Invite
-            </button>
-            <button
-              className="flex h-12 w-full items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-              onClick={async () => {
-                try {
-                  const invites = await retrieveAccepted(userID);
-                  console.log("Accepted invites:", invites);
-                } catch (error) {
-                  console.error("Failed to retrieve invites:", error);
-                }
-              }}
-            >
-              View Archived
             </button>
           </div>
           <button

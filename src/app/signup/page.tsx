@@ -1,11 +1,13 @@
 "use client";
 import Link from "next/link";
-import { useState } from "react";
+import Image from "next/image";
+import { useEffect, useState, useRef } from "react";
 import { registerUser } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { FirebaseError } from "firebase/app";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
+import { sign } from "crypto";
 
 export default function CreateAccountPage() {
     // Registration Information
@@ -13,22 +15,27 @@ export default function CreateAccountPage() {
     const [password, setPassword] = useState("");
     const [firstName, setFirstName] = useState("");
     const [lastName, setLastName] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
 
     // Checks if account is successfully created or already exists
-    const [registered, setRegistered] = useState(false);
+    const registeredRef = useRef(false);
     const [exists, setExists] = useState(false);
     const [invalidPass, setInvalidPass] = useState(false);
     const [invalidEmail, setInvalidEmail] = useState(false);
+    const [success, setSuccess] = useState(false);
 
     // Router for redirecting
     const router = useRouter();
 
     // Check if user is already logged in
-    onAuthStateChanged(auth, (user) => {
-        if (user && setRegistered(false)) {
-            router.push("/dashboard");
-        }
-    });
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, (user) => {
+            if (user && !registeredRef.current) {
+                router.push("/dashboard");
+            }
+        });
+        return () => unsubscribe();
+    }, [router]);
 
     const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         // Prevents page refresh/timeout
@@ -37,11 +44,13 @@ export default function CreateAccountPage() {
         // User Registration
         try {
             // Registers user to Firebase
-            const user = await registerUser(email, password, firstName, lastName);
+            registeredRef.current = true;
+            await registerUser(email, password, firstName, lastName);
+            await signOut(auth);
 
-            // Shows registration message and redirects to login after a brief delay
-            setRegistered(true); 
-            setTimeout(() => {router.push("/login");}, 500);
+            // Shows registration message and redirects to login
+            setSuccess(true);
+            router.push("/login");
         } catch (err: unknown) {
             // Handles Error if the Email is already in use.
             if (err instanceof FirebaseError) {
@@ -58,7 +67,8 @@ export default function CreateAccountPage() {
                 console.error("Registration Error:", err)
                 setExists(false);
             }
-            setRegistered(false);
+            registeredRef.current = false;
+            setSuccess(false);
         }
     };
 
@@ -72,7 +82,7 @@ export default function CreateAccountPage() {
                 <div className="w-full max-w-md p-12 rounded-4xl bg-[#f9f8f4] shadow-2xl shadow-">
                     
                     {/*The following code only executes on successful account creation*/}
-                    {registered && (
+                    {success && (
                     // Account creation message
                     <p className="bg-green-200 text-green-800 p-2 rounded mb-4">
                         <b>Account created. Redirecting to login. . .</b>
@@ -134,7 +144,7 @@ export default function CreateAccountPage() {
                                 Password
                             </label>
                             <input
-                                type="password"
+                                type={showPassword ? "text" : "password"}
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
@@ -142,6 +152,19 @@ export default function CreateAccountPage() {
                                 placeholder: text-black"
                                 placeholder="Password"
                             />
+                            <div className="flex items-center position-relative -translate-y-7 translate-x-[90%]">
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(!showPassword)}
+                                >
+                                <Image
+                                    src="../eye-off-svgrepo-com.svg"
+                                    alt="Show Password"
+                                    width={16}
+                                    height={16}
+                                />
+                                </button>
+                            </div>
                         </div>
 
                         <div>
