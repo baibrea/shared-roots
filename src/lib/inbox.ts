@@ -76,22 +76,6 @@ export async function acceptInvite(
     }
 }
 
-// Function to retrieve pending invites
-export async function retrievePending(
-    uid: string
-): Promise<Invitation[]> {
-    // Finds all invites in the user inbox with a "pending" status
-    const userInboxRef = collection(db, "users", uid, "inbox");
-    const userInboxDoc = query(userInboxRef, where("status", "==", "pending"), orderBy("received", "desc")); 
-    const userInboxSnap = await getDocs(userInboxDoc);
-    
-    // Maps documents to array
-    return userInboxSnap.docs.map(doc => ({
-        ...doc.data() as Invitation,
-        inviteId: doc.id
-    }));
-}
-
 // Function to retrieve archived invites
 export async function retrieveAccepted(
     uid: string
