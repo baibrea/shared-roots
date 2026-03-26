@@ -3,7 +3,7 @@ import { db } from "@/lib/firebase";
 import { joinFamily } from "@/lib/family";
 
 // Interface to act as a struct for invites
-interface Invitation {
+export interface Invitation {
     inviteId: string;
     familyName: string;
     familyID: string;
@@ -74,22 +74,6 @@ export async function acceptInvite(
         // Failure
         console.log("Error accepting invite", error);
     }
-}
-
-// Function to retrieve pending invites
-export async function retrievePending(
-    uid: string
-): Promise<Invitation[]> {
-    // Finds all invites in the user inbox with a "pending" status
-    const userInboxRef = collection(db, "users", uid, "inbox");
-    const userInboxDoc = query(userInboxRef, where("status", "==", "pending"), orderBy("received", "desc")); 
-    const userInboxSnap = await getDocs(userInboxDoc);
-    
-    // Maps documents to array
-    return userInboxSnap.docs.map(doc => ({
-        ...doc.data() as Invitation,
-        inviteId: doc.id
-    }));
 }
 
 // Function to retrieve archived invites
