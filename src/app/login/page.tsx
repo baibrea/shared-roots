@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import Image from "next/image";
 import { useState } from "react";
 import { loginUser } from "@/lib/auth";
 import { useRouter } from "next/navigation";
@@ -11,6 +12,8 @@ export default function LoginPage() {
     // Login Variables
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [loginSuccess, setLoginSuccess] = useState(false);
 
     // Variables for failed login
     const [loginFailed, setLoginFailed] = useState(false);
@@ -33,7 +36,8 @@ export default function LoginPage() {
         try {
             // Firebase user login
             const user = await loginUser(email, password);
-            console.log("Logged in user:", user.uid, user.email);
+            setLoginSuccess(true);
+            setLoginFailed(false);
             router.push("/dashboard");
 
         } catch (err: unknown) {
@@ -47,28 +51,39 @@ export default function LoginPage() {
                     setFailMessage("Login failed: Too many requests. Try again later.");
                 } else if (err.code === "auth/network-request-failed") {
                     setFailMessage("Network Request Failed. Try again later.");
+                } else if (err.code === "auth/invalid-email") {
+                    setFailMessage("No account associated with this email. Please try again.");
+                } else {
+                    setFailMessage("Login failed. Please try again.");
                 }
             }
             else {
                 // Handles Generic Errors with Login
                 console.error("Login Error:", err)
-                setFailMessage("Error Logging In. Please Try Again.");
+                setFailMessage("Login failed. Please try again.");
             }
-            setLoginFailed(true);          
+            setLoginFailed(true);
+            setLoginSuccess(false);          
         }
     };
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#CAD7CA]">
         <div className="w-full max-w-md p-8 sm:p-12 rounded-4xl bg-[#f9f8f4] shadow-2xl shadow-">
-            {/*The following code only executes on if login is unsuccessful*/}
+            {/*The login result messages*/}
             {loginFailed && (
                 // Login failed message
                 <p className="bg-red-200 text-red-800 p-2 rounded mb-4">
                     <b>{failMessage}</b>
                 </p>
             )}
-            {/*End login failure code*/}
+            
+            {loginSuccess && (
+                // Login success message
+                <p className="bg-green-200 text-green-800 p-2 rounded mb-4">
+                    <b>Login successful! Redirecting...</b>
+                </p>
+            )}
 
             <h1 className="text-2xl font-bold mb-2 text-center text-[#3A433A]">
                 Welcome!
@@ -98,7 +113,7 @@ export default function LoginPage() {
                         Password
                     </label>
                     <input
-                        type="password"
+                        type={showPassword ? "text" : "password"}
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
@@ -106,6 +121,19 @@ export default function LoginPage() {
                         placeholder: text-black"
                         placeholder="Password"
                     />
+                    <div className="flex items-center position-relative -translate-y-7 translate-x-[90%]">
+                        <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                        >
+                        <Image
+                            src="../eye-off-svgrepo-com.svg"
+                            alt="Show Password"
+                            width={16}
+                            height={16}
+                        />
+                        </button>
+                    </div>
                 </div>
                 {/* might implement */}
                 <div className="text-right mr-2">
@@ -113,7 +141,6 @@ export default function LoginPage() {
                         Forgot password?
                     </p>
                 </div>
-
                 <button
                     type="submit"
                     className="w-full bg-[#698b6a] text-white py-2 my-1 rounded-3xl hover:opacity-90 transition disabled:opacity-50"
