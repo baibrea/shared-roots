@@ -109,48 +109,48 @@ export default function LoginPage() {
                         />
                     </div>
 
-                <div className="relative">
-                    <label className="block text-sm font-medium mb-1 text-white">
-                        Password
-                    </label>
-                    <input
-                        type={showPassword ? "text" : "password"}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        className="w-full border border-[#6E6E6E] rounded-3xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black bg-[#dde4dd]
-                        placeholder: text-black"
-                        placeholder="Password"
-                    />
-                    <div className="absolute right-3 top-9">
-                        <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                            className="cursor-pointer"
-                        >
-                        <Image
-                            src="../eye-off-svgrepo-com.svg"
-                            alt="Show Password"
-                            width={16}
-                            height={16}
+                    <div className="relative">
+                        <label className="block text-sm font-medium mb-1 text-white">
+                            Password
+                        </label>
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            className="w-full border border-[#6E6E6E] rounded-3xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black bg-[#dde4dd]
+                            placeholder: text-black"
+                            placeholder="Password"
                         />
-                        </button>
+                        <div className="absolute right-3 top-9">
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="cursor-pointer"
+                            >
+                            <Image
+                                src="../eye-off-svgrepo-com.svg"
+                                alt="Show Password"
+                                width={16}
+                                height={16}
+                            />
+                            </button>
+                        </div>
                     </div>
-                </div>
-                {/* might implement */}
-                <div className="text-right mr-2">
-                    <p className="text-sm text-white">
-                        Forgot password?
-                    </p>
-                </div>
+                    {/* might implement */}
+                    <div className="text-right mr-2">
+                        <p className="text-sm text-white">
+                            Forgot password?
+                        </p>
+                    </div>
 
-                <button
-                    type="submit"
-                    className="w-full bg-[#7b8b69] text-white py-2 my-1 rounded-3xl hover:opacity-90 transition disabled:opacity-50 cursor-pointer"
-                >
-                        Login
-                </button>
-            </form>
+                    <button
+                        type="submit"
+                        className="w-full bg-[#7b8b69] text-white py-2 my-1 rounded-3xl hover:opacity-90 transition disabled:opacity-50 cursor-pointer"
+                    >
+                            Login
+                    </button>
+                </form>
 
                 <p className="mt-4 text-sm text-center text-white">
                     Don’t have an account?{" "}
