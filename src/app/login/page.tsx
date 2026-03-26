@@ -69,14 +69,14 @@ export default function LoginPage() {
 
   return (
     <div className="flex min-h-screen justify-center bg-[#CAD7CA]">
-        {/* Left side of screen
-        * TODO: add image */}
+        {/* Left side of screen */}
         <div className="w-1/2 flex flex-col justify-start pt-56 bg-[url('/tree2.jpg')] bg-cover bg-blend-darken">
         </div>
 
         {/* Right side of screen */}
         <div className="w-1/2 flex items-center justify-center bg-[#2c3224]">
             <div className="w-full max-w-md p-10">
+                
                 {/*The following code only executes on if login is unsuccessful*/}
                 {loginFailed && (
                     // Login failed message

@@ -73,12 +73,14 @@ export default function CreateAccountPage() {
 
     // Front-End
     return (
-        <div className="relative min-h-screen bg-[#CAD7CA]">
-            <Link href="/" className="absolute top-4 left-4 text-[#374426] text-xl font-bold">
-                Shared Roots
-            </Link>
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="w-full max-w-md p-12 rounded-4xl bg-[#f9f8f4] shadow-2xl shadow-">
+        <div className="flex min-h-screen justify-center bg-[#CAD7CA]">
+            {/* Left side of screen */}
+            <div className="w-1/2 flex flex-col justify-start pt-56 bg-[url('/tree2.jpg')] bg-cover bg-blend-darken">
+            </div>
+
+            {/* Right side of screen */}
+            <div className="w-1/2 flex items-center justify-center bg-[#2c3224]">
+                <div className="w-full max-w-md p-10">
                     
                     {/*The following code only executes on successful account creation*/}
                     {success && (
@@ -114,17 +116,17 @@ export default function CreateAccountPage() {
                     )}
                     {/*End account creation failure code*/}
 
-                    <h1 className="text-2xl font-bold mb-2 text-center text-[#3A433A]">
+                    <h1 className="text-4xl font-bold mb-2 text-center">
                         Register
                     </h1>
 
-                    <p className="text-center mb-8 text-[#3A433A]">
+                    <p className="text-center text-xl mb-8 text-[#bfcab2]">
                         Create an account to begin tracking your roots.
                     </p>
 
                     <form className="space-y-4" onSubmit={handleSubmit}>
                         <div>
-                            <label className="block text-sm font-medium mb-1 text-[#3A433A]">
+                            <label className="block text-sm font-medium mb-1 text-white">
                                 Email
                             </label>
                             <input
@@ -138,8 +140,8 @@ export default function CreateAccountPage() {
                             />
                         </div>
 
-                        <div>
-                            <label className="block text-sm font-medium mb-1 text-[#3A433A]">
+                        <div className="relative">
+                            <label className="block text-sm font-medium mb-1 text-white">
                                 Password
                             </label>
                             <input
@@ -151,7 +153,7 @@ export default function CreateAccountPage() {
                                 placeholder: text-black"
                                 placeholder="Password"
                             />
-                            <div className="flex items-center position-relative -translate-y-7 translate-x-[90%]">
+                            <div className="absolute right-3 top-9">
                                 <button
                                     type="button"
                                     onClick={() => setShowPassword(!showPassword)}
@@ -167,7 +169,7 @@ export default function CreateAccountPage() {
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium mb-1 text-[#3A433A]">
+                            <label className="block text-sm font-medium mb-1 white">
                                 Name
                             </label>
                             <div className="flex gap-4">
@@ -194,14 +196,14 @@ export default function CreateAccountPage() {
                         </div>
                         <button
                             type="submit"
-                            className="w-full bg-[#698b6a] text-white py-2 my-1 rounded-3xl hover:opacity-90 transition disabled:opacity-50"
+                            className="w-full bg-[#7b8b69] text-white py-2 my-1 rounded-3xl hover:opacity-90 transition disabled:opacity-50"
                         >
                                 Create Account
                         </button>
                     </form>
 
                     <div>
-                        <p className="mt-4 text-sm text-center text-black">
+                        <p className="mt-4 text-sm text-center text-white">
                             Already have an account?{" "}
                             <Link href="/login" className="text-blue-600 hover:underline">
                                 Log in
