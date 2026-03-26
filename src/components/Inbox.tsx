@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { sendInvite, acceptInvite, retrievePending, retrieveAccepted } from "@/lib/inbox";
+import { sendInvite, acceptInvite, retrieveAccepted } from "@/lib/inbox";
 import { Invitation } from "@/lib/inbox";
-import { getDoc, DocumentReference } from "firebase/firestore";
+import { collection, getDoc, DocumentReference, onSnapshot, orderBy, query, where } from "firebase/firestore";
+import { db } from "@/lib/firebase";
 import { Send } from "lucide-react";
-import { on } from "events";
+import Image from "next/image";
 
 export default function Inbox({
     docRef,
@@ -28,21 +29,28 @@ export default function Inbox({
     const [email, setEmail] = useState("");
     const [familyID, setFamilyID] = useState("");
     const [invites, setInvites] = useState<Invitation[]>([]);
+    const [pendingInvites, setPendingInvites] = useState<Invitation[]>([]);
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState(false);
     const [acceptedInvite, setAcceptedInvite] = useState(false);
 
-    // Retrieves pending invites on start - Inbox starts on pending window
+    // Real-time listener for pending invites
     useEffect(() => {
-        const initPending = async () => {
-            try {
-                const pendingInvites = await retrievePending(uid);
-                setInvites(pendingInvites);
-            } catch (error) {
-                console.error("Failed to retrieve pending invites:", error);
-            }
-        };
-        initPending();
+        const q = query(
+            collection(db, "users", uid, "inbox"),
+            where("status", "==", "pending"),
+            orderBy("received", "desc")
+        );
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const pending = snapshot.docs.map(doc => ({
+                ...doc.data() as Invitation,
+                inviteId: doc.id
+            }));
+            setPendingInvites(pending);
+        }, (error) => {
+            console.error("Failed to listen for pending invites:", error);
+        });
+        return () => unsubscribe();
     }, [uid]);
 
     // Sending Invitation Logic
@@ -71,44 +79,31 @@ export default function Inbox({
                     <h1 className="text-2xl font-bold mb-4">Inbox</h1>    
                     <button
                         type="button"
-                        onClick={async () => {
-                            try {
-                                const pendingInvites = await retrievePending(uid);
-                                if (pendingInvites.length === 0) {
-                                    onClose(false);
-                                } else {
-                                    onClose(true);
-                                }
-                            } catch (error) {
-                                onClose(false);
-                                console.error("Failed to retrieve pending invites:", error);
-                            }
-                        }}
-                        className="flex h-12 w-full items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
+                        onClick={() => onClose(pendingInvites.length > 0)}
+                        className="flex h-10 w-10 items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] transition-colors hover:border-transparent hover:bg-black/[.01] dark:border-white/[.145] dark:hover:bg-[#1a1a1a]"
                     >
-                        Close Inbox
+                        <Image 
+                            src="../close-1511-svgrepo-com.svg" 
+                            alt="Close Inbox"
+                            width={20}
+                            height={20}
+                        />
                     </button>
                 </div>
                 <hr></hr>
                 <div className="flex flex-row items-center gap-4">
                     <button
-                    className="flex h-12 w-full items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-                    onClick={async () => {
-                        try {
-                            const pending = await retrievePending(uid);
-                            setInvites(pending);
-                            setInboxView("pending");
-                            setSuccess(false);
-                            setError(false);
-                        } catch (error) {
-                            console.error("Failed to retrieve invites:", error);
-                        }
+                    className="flex h-12 w-full items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] dark:text-white md:w-[158px]"
+                    onClick={() => {
+                        setInboxView("pending");
+                        setSuccess(false);
+                        setError(false);
                     }}
                     >
                     View Pending
                     </button>
                     <button
-                    className="flex h-12 w-full items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
+                    className="flex h-12 w-full items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] dark:text-white md:w-[158px]"
                     onClick={async () => {
                         try {
                             const accepted = await retrieveAccepted(uid);
@@ -124,7 +119,7 @@ export default function Inbox({
                     View Archived
                     </button>
                     <button
-                    className="flex h-12 w-full items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
+                    className="flex h-12 w-full items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] dark:text-white md:w-[158px]"
                     onClick={async () => {
                         try {
                             setInboxView("invite");
@@ -181,27 +176,23 @@ export default function Inbox({
                 {inboxView === "pending" && (
                     <div className="flex flex-col gap-2">
                         <p><strong>Pending Invitations</strong></p><hr></hr>
-                        {invites.length === 0 ? (
+                        {pendingInvites.length === 0 ? (
                             <p>No pending invitations.</p>
                         ) : (
-                            invites.map((invite) => (
+                            pendingInvites.map((invite) => (
                                 <div key={invite.inviteId} className="flex flex-col gap-1 p-2 border rounded">
                                     <p><strong>Family:</strong> {invite.familyName}</p>
                                     <p><strong>From:</strong> {invite.name}</p>
                                     <p><strong>Message:</strong> {invite.message}</p>
                                     <p><strong>Status:</strong> {invite.status}</p>
                                     <button
-                                    className="flex h-12 w-full items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
+                                    className="flex h-12 w-full items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] dark:text-white md:w-[158px]"
                                     onClick={async () => {
                                         try {
                                             await acceptInvite(invite.inviteId, invite.familyID, firstName, lastName, uid);
                                             setAcceptedInvite(true);
                                             setSuccess(true);
                                             setError(false);
-
-                                            // Refresh pending invites after accepting
-                                            const pending = await retrievePending(uid);
-                                            setInvites(pending);
                                             
                                             // Updates families in parent
                                             const docSnap = await getDoc(docRef);
@@ -278,7 +269,7 @@ export default function Inbox({
                                 className="p-2 border rounded mt-2 w-full"
                             />
                             <button
-                            className="flex h-12 w-full items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
+                            className="flex h-12 w-full items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:text-white dark:hover:bg-[#1a1a1a] md:w-[158px]"
                             type="submit"  
                             >
                             Send Invite

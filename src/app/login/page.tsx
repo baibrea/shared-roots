@@ -51,6 +51,8 @@ export default function LoginPage() {
                     setFailMessage("Login failed: Too many requests. Try again later.");
                 } else if (err.code === "auth/network-request-failed") {
                     setFailMessage("Network Request Failed. Try again later.");
+                } else if (err.code === "auth/invalid-email") {
+                    setFailMessage("No account associated with this email. Please try again.");
                 } else {
                     setFailMessage("Login failed. Please try again.");
                 }

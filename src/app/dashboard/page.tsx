@@ -4,11 +4,10 @@ import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { onAuthStateChanged} from "firebase/auth";
-import { doc, DocumentData, DocumentReference, getDoc } from "firebase/firestore";
+import { collection, doc, DocumentData, getDoc, onSnapshot, query, where } from "firebase/firestore";
 import { logOut } from "@/lib/auth";
 import { auth, db } from "@/lib/firebase";
 import { createFamily } from "@/lib/family";
-import { sendInvite, acceptInvite, retrievePending, retrieveAccepted } from "@/lib/inbox";
 import Inbox from "@/components/Inbox";
 
 export default function Dashboard() {
@@ -48,17 +47,17 @@ export default function Dashboard() {
                 setUserFamilies(data.families);
 
                 // Check for pending invites
-                try {
-                  const pendingInvites = await retrievePending(data.uid);
-                  if (pendingInvites.length > 0) {
-                    setHasPending(true);
-                  } else {
+                const inboxAlert = onSnapshot(
+                  query(collection(db, "users", user.uid, "inbox"), where("status", "==", "pending")),
+                  (snapshot) => {
+                    setHasPending(!snapshot.empty);
+                  },
+                  (error) => {
+                    console.error("Failed to retrieve pending invites:", error);
                     setHasPending(false);
                   }
-                } catch (error) {
-                  console.error("Failed to retrieve pending invites:", error);
-                  setHasPending(false);
-                }
+                );
+                return () => inboxAlert();
             }
         }
       });

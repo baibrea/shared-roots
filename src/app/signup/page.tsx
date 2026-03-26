@@ -46,7 +46,6 @@ export default function CreateAccountPage() {
             // Registers user to Firebase
             registeredRef.current = true;
             await registerUser(email, password, firstName, lastName);
-            await signOut(auth);
 
             // Shows registration message and redirects to login
             setSuccess(true);
