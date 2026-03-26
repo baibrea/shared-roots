@@ -66,9 +66,9 @@ export default function FamilyTreePage() {
   }
 
   return (
-    <div className="flex h-screen">
-      <div className="w-3/4 p-10 overflow-y-auto bg-[#393939] border-r border-gray-200 flex flex-col">
-        <h1 className="text-2xl font-bold mb-6 shrink-0">Family Tree</h1>
+    <div className="flex h-screen overflow-hidden">
+      {/* Family Tree */}
+      <div className="w-3/4 p-10 overflow-y-auto bg-[#2c3224] border-r border-gray-200 flex flex-col">
 
         {people.length === 0 && <p>No people added yet.</p>}
 
@@ -100,7 +100,9 @@ export default function FamilyTreePage() {
         )}
 
       </div>
-      <div className="w-1/4 p-10 bg-[#E9E9E9] text-black">
+
+      {/* Right Panel */}
+      <div className="w-1/4 flex flex-col overflow-y-auto p-10 bg-[#E9E9E9] text-black">
         {/* UI when no family member is selected */}
         {!selectedPerson && (
           <div className="flex flex-col h-full">
@@ -136,7 +138,7 @@ export default function FamilyTreePage() {
           <div className="h-full">
             <button
               onClick={() => setSelectedPersonId(null)}
-              className="mb-6 px-4 py-2 bg-[#383838] text-white rounded-full hover:bg-[#282828]"
+              className="mb-6 px-4 py-2 bg-[#2c3224] text-white rounded-full hover:bg-[#3E4B2C] cursor-pointer"
             >
               Back
             </button>
@@ -202,7 +204,7 @@ export default function FamilyTreePage() {
             {/* Button to modify family member profile */}
             <button
               onClick={() => setEditingPerson(selectedPerson)}
-              className="mt-6 px-4 py-2 bg-[#383838] text-white rounded-full hover:bg-[#282828]"
+              className="mt-6 px-4 py-2 bg-[#2c3224] text-white rounded-full hover:bg-[#3E4B2C] cursor-pointer"
             >
               Edit {selectedPerson.firstName}
             </button>
