@@ -4,6 +4,7 @@ import "./globals.css";
 import Link from "next/link";
 import { PeopleProvider } from "@/lib/PeopleContext";
 import AuthRedirect from "@/lib/AuthRedirect";
+import Header from "@/components/Header";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,14 +28,8 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
         <PeopleProvider>
           <AuthRedirect />
           {/* Navbar */}
-          <header className="h-16 flex items-center px-6 bg-[#CAD7CA]">
-            <Link
-              href="/dashboard"
-              className="text-[#374426] text-xl font-bold"
-            >
-              Shared Roots
-            </Link>
-          </header>
+          <Header />
+
           {/* Page Content */}
           <main className="flex-1">{children}</main>
         </PeopleProvider>

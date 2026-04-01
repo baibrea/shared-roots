@@ -68,89 +68,91 @@ export default function LoginPage() {
     };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#CAD7CA]">
-        <div className="w-full max-w-md p-8 sm:p-12 rounded-4xl bg-[#f9f8f4] shadow-2xl shadow-">
-            {/*The login result messages*/}
-            {loginFailed && (
-                // Login failed message
-                <p className="bg-red-200 text-red-800 p-2 rounded mb-4">
-                    <b>{failMessage}</b>
-                </p>
-            )}
-            
-            {loginSuccess && (
-                // Login success message
-                <p className="bg-green-200 text-green-800 p-2 rounded mb-4">
-                    <b>Login successful! Redirecting...</b>
-                </p>
-            )}
+    <div className="flex min-h-screen justify-center bg-[#CAD7CA]">
+        {/* Left side of screen */}
+        <div className="w-1/2 flex flex-col justify-start pt-56 bg-[url('/tree2.jpg')] bg-cover bg-blend-darken">
+        </div>
 
-            <h1 className="text-2xl font-bold mb-2 text-center text-[#3A433A]">
-                Welcome!
-            </h1>
-            <p className="text-center mb-8 text-[#3A433A]">
-                Login to track your roots.
-            </p>
-
-            <form className="space-y-4" onSubmit={handleSubmit}>
-                <div>
-                    <label className="block text-sm font-medium mb-1 text-[#3A433A]">
-                        Email
-                    </label>
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                        className="w-full border border-[#6E6E6E] rounded-3xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black bg-[#dde4dd]
-                        placeholder: text-black"
-                        placeholder="Email"
-                    />
-                </div>
-
-                <div>
-                    <label className="block text-sm font-medium mb-1 text-[#3A433A]">
-                        Password
-                    </label>
-                    <input
-                        type={showPassword ? "text" : "password"}
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                        className="w-full border border-[#6E6E6E] rounded-3xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-black bg-[#dde4dd]
-                        placeholder: text-black"
-                        placeholder="Password"
-                    />
-                    <div className="flex items-center position-relative -translate-y-7 translate-x-[90%]">
-                        <button
-                            type="button"
-                            onClick={() => setShowPassword(!showPassword)}
-                        >
-                        <Image
-                            src="../eye-off-svgrepo-com.svg"
-                            alt="Show Password"
-                            width={16}
-                            height={16}
-                        />
-                        </button>
-                    </div>
-                </div>
-                {/* might implement */}
-                <div className="text-right mr-2">
-                    <p className="text-sm text-[#3A433A]">
-                        Forgot password?
+        {/* Right side of screen */}
+        <div className="w-1/2 flex items-center justify-center bg-[#2c3224]">
+            <div className="w-full max-w-md p-10">
+                
+                {/*The following code only executes on if login is unsuccessful*/}
+                {loginFailed && (
+                    // Login failed message
+                    <p className="bg-red-200 text-red-800 p-2 rounded mb-4">
+                        <b>{failMessage}</b>
                     </p>
-                </div>
-                <button
-                    type="submit"
-                    className="w-full bg-[#698b6a] text-white py-2 my-1 rounded-3xl hover:opacity-90 transition disabled:opacity-50"
-                >
-                        Login
-                </button>
-            </form>
+                )}
+                {/*End login failure code*/}
 
-            <div>
-                <p className="mt-4 text-sm text-center text-black">
+                <h1 className="text-4xl font-bold mb-2 text-center">
+                    Welcome!
+                </h1>
+                <p className="text-center text-xl mb-8 text-[#bfcab2]">
+                    Login to track your roots.
+                </p>
+
+                <form className="space-y-4" onSubmit={handleSubmit}>
+                    <div>
+                        <label className="block text-sm font-medium mb-1 text-white">
+                            Email
+                        </label>
+                        <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                            className="w-full border border-[#6E6E6E] rounded-3xl px-3 py-2 focus:outline-none focus:ring-2 focus:bg-[#c6d2c6] bg-[#dde4dd]
+                            placeholder: text-black"
+                            placeholder="Email"
+                        />
+                    </div>
+
+                    <div className="relative">
+                        <label className="block text-sm font-medium mb-1 text-white">
+                            Password
+                        </label>
+                        <input
+                            type={showPassword ? "text" : "password"}
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                            className="w-full border border-[#6E6E6E] rounded-3xl px-3 py-2 focus:outline-none focus:ring-2 focus:bg-[#c6d2c6] bg-[#dde4dd]
+                            placeholder: text-black"
+                            placeholder="Password"
+                        />
+                        <div className="absolute right-3 top-9">
+                            <button
+                                type="button"
+                                onClick={() => setShowPassword(!showPassword)}
+                                className="cursor-pointer"
+                            >
+                            <Image
+                                src="../eye-off-svgrepo-com.svg"
+                                alt="Show Password"
+                                width={16}
+                                height={16}
+                            />
+                            </button>
+                        </div>
+                    </div>
+                    {/* might implement */}
+                    <div className="text-right mr-2">
+                        <p className="text-sm text-white">
+                            Forgot password?
+                        </p>
+                    </div>
+
+                    <button
+                        type="submit"
+                        className="w-full bg-[#7b8b69] text-white py-2 my-1 rounded-3xl hover:opacity-90 transition disabled:opacity-50 cursor-pointer"
+                    >
+                            Login
+                    </button>
+                </form>
+
+                <p className="mt-4 text-sm text-center text-white">
                     Don’t have an account?{" "}
                     <Link href="/signup" className="text-blue-600 hover:underline">
                         Sign up
