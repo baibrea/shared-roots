@@ -10,6 +10,7 @@ import { auth, db } from "@/lib/firebase";
 import { createFamily } from "@/lib/family";
 import Inbox from "@/components/Inbox";
 import FamilyDropdown from "@/components/FamilyDropdown";
+import { useFamily } from "@/lib/FamilyContext";
 
 export default function Dashboard() {
 
@@ -40,9 +41,10 @@ export default function Dashboard() {
       setShowInbox(true);
   };
 
-  // Create Family popup
+  // Family Creation/Selection
   const [showCreateFamily, setShowCreateFamily] = useState(false);
   const [newFamilyName, setNewFamilyName] = useState("");
+  const { setActiveFamily } = useFamily();
 
   // Router for redirecting
   const router = useRouter();
@@ -195,6 +197,7 @@ export default function Dashboard() {
                 families={userFamilies}
                 activeFamilyId={activeFamilyId}
                 onSelectFamily={(family) => {
+                  setActiveFamily(family);
                   setActiveFamilyId(family.id);
                   setActiveFamilyName(family.name);
                 }}

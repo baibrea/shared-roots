@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { act, useEffect, useState } from "react";
 import AddPersonForm from "@/lib/AddPersonForm";
 import { usePeople } from "@/lib/PeopleContext";
 import { Person } from "@/types/person";
 import VisualGraph from "@/components/VisualGraph";
 import SearchBar from "@/components/SearchBar";
 import UpdatePersonForm from "@/lib/UpdatePersonForm";
+import { useFamily } from "@/lib/FamilyContext";
 
 export default function FamilyTreePage() {
   const { people } = usePeople();
@@ -18,6 +19,7 @@ export default function FamilyTreePage() {
 
   const selectedPerson = people.find(p => p.id === selectedPersonId) || null;
   const activePerson = selectedPerson || people[0] || null;
+  const { activeFamily } = useFamily();
 
   const filteredPeople = people.filter((p) => {
     const fullName = (p.firstName + " " + p.lastName).toLowerCase();

@@ -2,9 +2,10 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { Person } from "@/types/person";
-import { addDoc, arrayUnion, collection, doc, getDoc, onSnapshot, updateDoc } from "firebase/firestore";
+import { addDoc, arrayUnion, collection, doc, onSnapshot, updateDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { getAuth, onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
+import { useFamily } from "./FamilyContext";
 
 type PeopleContextType = {
   people: Person[];
@@ -24,6 +25,7 @@ const PeopleContext = createContext<PeopleContextType | null>(null);
 export function PeopleProvider({ children }: { children: React.ReactNode }) {
   const [people, setPeople] = useState<Person[]>([]);
   const [user, setUser] = useState<FirebaseUser | null>(null);
+  const { activeFamily } = useFamily();
 
   // Tracks the logged-in user
   useEffect(() => {
@@ -37,39 +39,23 @@ export function PeopleProvider({ children }: { children: React.ReactNode }) {
 
   // 
   useEffect(() => {
-    // Check if a user is currently logged in
-    if (!user) return;
+    // Check if a user is currently logged in and get their family ID(s)
+    if (!user || !activeFamily?.id) return;
 
-    // Get the user's document from Firestore
-    const userRef = doc(db, "users", user.uid);
+    const peopleRef = collection(db, "families", activeFamily.id, "people");
 
-    // Listen for changes in "people" subcollection
-    const unsubscribeUser = onSnapshot(userRef, (userSnap) => {
-      if (!userSnap.exists()) return;
+    const unsubscribePeople = onSnapshot(peopleRef, (snapshot) => {
+      const peopleData = snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...docSnap.data()
+      })) as Person[];
 
-      const userData = userSnap.data();
-      const families = userData.families || [];
-      if (families.length === 0) return;
-
-      const familyId = families[0].id; // Use the first family temporarily
-
-      const peopleCollection = collection(db, "families", familyId, "people");
-
-      const unsubscribePeople = onSnapshot(peopleCollection, (snapshot) => {
-        const peopleData = snapshot.docs.map((doc) => ({
-          id: doc.id,
-          ...doc.data()
-        })) as Person[];
-
-        setPeople(peopleData);
+      setPeople(peopleData);
       });
 
-      // Unsubscribes from "people" listener
-      return () => unsubscribePeople();
-    });
-
-    return () => unsubscribeUser();
-  }, [user]);
+    // Unsubscribes from "people" listener
+    return () => unsubscribePeople();
+  }, [user, activeFamily?.id]); 
 
   // Add a new family member to the "people" subcollection
   async function addPerson(
@@ -78,29 +64,11 @@ export function PeopleProvider({ children }: { children: React.ReactNode }) {
     relationship?: string
   ): Promise<string | undefined> {
 
-    if (!user) {
-      return;
-    }
+    if (!user || !activeFamily?.id) return;
 
-    // Get the user's document from Firestore
-    const userRef = doc(db, "users", user.uid);
-    const userSnap = await getDoc(userRef);
-    if (!userSnap.exists()) {
-      return;
-    }
-
-    // Get the user's family ID(s)
-    const userData = userSnap.data();
-    const families = userData.families || [];
-    if (families.length === 0) {
-      return;
-    }
-
-    const familyId = families[0].id; // Use the first family temporarily
+    const peopleCollection = collection(db, "families", activeFamily.id, "people");
 
     try {
-      const peopleCollection = collection(db, "families", familyId, "people");
-
       // If a person is a child of the reference person, set the parents field to reference that person
       if (relationship === "child" && referencePerson) {
         person.parents = [referencePerson.id];
@@ -128,7 +96,7 @@ export function PeopleProvider({ children }: { children: React.ReactNode }) {
       const newId = docRef.id;
 
       if (referencePerson) {
-        const referenceRef = doc(db, "families", familyId, "people", referencePerson.id);
+        const referenceRef = doc(db, "families", activeFamily.id, "people", referencePerson.id);
         // If the new person is a child, update the reference person to add this new child.
         if (relationship === "child") {
           await updateDoc(referenceRef, {
@@ -136,7 +104,7 @@ export function PeopleProvider({ children }: { children: React.ReactNode }) {
           });
           // If the reference person has a spouse, also update the spouse to add this new child
           if(referencePerson.spouse) {
-            const spouseRef = doc(db, "families", familyId, "people", referencePerson.spouse);
+            const spouseRef = doc(db, "families", activeFamily.id, "people", referencePerson.spouse);
             await updateDoc(spouseRef, { children: arrayUnion(newId) });
           }
         }
@@ -149,7 +117,7 @@ export function PeopleProvider({ children }: { children: React.ReactNode }) {
           // If the reference person has existing parents, assume new parent is spouse 
           // and update the existing parent to link to the new spouse
           if(referencePerson.parents && referencePerson.parents.length > 0) {
-            const existingParentRef = doc(db, "families", familyId, "people", referencePerson.parents[0]);
+            const existingParentRef = doc(db, "families", activeFamily.id, "people", referencePerson.parents[0]);
             await updateDoc(existingParentRef, { spouse: newId });
           }
         }
@@ -162,7 +130,7 @@ export function PeopleProvider({ children }: { children: React.ReactNode }) {
             // If the reference person has children, update the new spouse to link to those children
           if(referencePerson.children && referencePerson.children.length > 0) {
             for (const childId of referencePerson.children) {
-              const childRef = doc(db, "families", familyId, "people", childId);
+              const childRef = doc(db, "families", activeFamily.id, "people", childId);
               await updateDoc(childRef, { parents: arrayUnion(newId) });
             }
           }
@@ -175,18 +143,9 @@ export function PeopleProvider({ children }: { children: React.ReactNode }) {
   }
 
   async function updatePerson(personId: string, updatedData: Partial<Person>) {
-    if (!user) return;
+    if (!user || !activeFamily?.id) return;
 
-    const userRef = doc(db, "users", user.uid);
-    const userSnap = await getDoc(userRef);
-    if (!userSnap.exists()) return;
-
-    const families = userSnap.data().families || [];
-    if (families.length === 0) return;
-
-    const familyId = families[0].id; // Use the first family temporarily
-
-    const personRef = doc(db, "families", familyId, "people", personId);
+    const personRef = doc(db, "families", activeFamily.id, "people", personId);
 
     await updateDoc(personRef, updatedData);
   }
