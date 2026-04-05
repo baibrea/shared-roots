@@ -1,5 +1,6 @@
-import { doc, addDoc, getDoc, setDoc, updateDoc, collection, arrayUnion } from "firebase/firestore";
-import { db } from "@/lib/firebase";
+import { doc, addDoc, getDoc, setDoc, updateDoc, collection, arrayUnion, getDocs } from "firebase/firestore";
+import { db, storage } from "@/lib/firebase";
+import { uploadBytes, ref } from "@firebase/storage";
 
 // Function to create a new family. Returns family ID
 export async function createFamily(
@@ -82,3 +83,34 @@ export async function joinFamily(
         
     }
 }
+
+// Function to upload media file to family's cloud
+export async function uploadMedia(
+    familyID: string,
+    mediaURL: string,
+    mediaType: string,
+    description: string,
+    uploader: string
+): Promise<void> { 
+    // Gets family document and checks if it exists
+    const familyRef = doc(db, "families", familyID);
+    const familySnap = await getDoc(familyRef);
+    if (!familySnap.exists()) {
+        throw new Error("Family does not exist");
+    } else {
+
+        // Adds media information to "media" subcollection
+        await addDoc(collection(db, "families", familyID, "media"), {
+            mediaURL,
+            mediaType,
+            description,
+            uploader,
+            uploadDate: new Date()
+        });
+
+        // Uploads the media to the cloud
+        const storageRef = ref(storage, `families/${familyID}/media/${mediaURL}`);
+        await uploadBytes(storageRef, mediaURL as unknown as Blob);
+    }
+}
+
