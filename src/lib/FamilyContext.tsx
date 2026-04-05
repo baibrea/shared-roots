@@ -1,5 +1,7 @@
 "use client";
-import { createContext, useContext, useState } from "react";
+import { onAuthStateChanged } from "firebase/auth";
+import { createContext, useContext, useEffect, useState } from "react";
+import { auth } from "./firebase";
 
 type Family = {
     id: string;
@@ -15,6 +17,14 @@ const FamilyContext = createContext<FamilyContextType | null>(null);
 
 export function FamilyProvider({ children }: { children: React.ReactNode }) {
     const [activeFamily, setActiveFamily] = useState<Family | null>(null);
+
+    useEffect(() => {
+        const unsubscribe = onAuthStateChanged(auth, () => {
+            setActiveFamily(null);
+        });
+
+        return () => unsubscribe();
+    }, []);
 
     return (
         <FamilyContext.Provider value={{ activeFamily, setActiveFamily }}>
