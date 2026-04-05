@@ -7,7 +7,7 @@ export default function Header() {
     const pathname = usePathname();
 
     // Hide header on login and signup pages
-    if (pathname === "/login" || pathname === "/signup") {
+    if (pathname === "/login" || pathname === "/signup" || pathname === "/dashboard") {
         return null;
     }
 

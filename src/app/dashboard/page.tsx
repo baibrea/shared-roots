@@ -69,43 +69,103 @@ export default function Dashboard() {
   return (
     <div className="flex min-h-screen bg-zinc-50 font-sans dark:bg-[#FFFFFF]">
       <meta name="viewport" content="width=device-width, initial-scale=1"/>
-      <aside className="flex flex-col min-h-screen w-60 bg-[#657B97] items-center justify-center gap-4 justify-start py-10">
-        {/*TODO: Add Shared Roots Logo*/}
-        <Image
-          className="dark:invert "
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-      </aside>
-      <main className="flex min-h-screen w-full max-w-7xl flex-col items-center justify-between py-32 px-16 bg-[#DDE7F4] sm:items-start">
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          {
-            showInbox && (
-            <Inbox 
-              docRef={doc(db, "users", userID)}
-              uid={userID}
-              families={userFamilies?.map(family => ({ id: family.id, name: family.name })) || []}
-              firstName={firstName}
-              lastName={lastName}
-              onClose={(returnValue: boolean) => {
-                setShowInbox(false);
+      <aside className="flex flex-col min-h-screen items-center w-1/6 bg-[#657B97] py-10">
+        <div className="flex flex-col w-full items-center gap-4">
+          {/*TODO: Add Shared Roots Logo*/}
+          <Image
+            className="dark:invert pb-10"
+            src="/next.svg"
+            alt="Next.js logo"
+            width={100}
+            height={20}
+            priority
+          />
+          <Link href="/dashboard" className="flex h-12 w-full items-center justify-center gap-2 px-5 text-white transition-colors dark:hover:bg-[#1a1a1a]">
+            Dashboard
+          </Link>
+          <Link href="/familytree" className="flex h-12 w-full items-center justify-center gap-2 px-5 text-white transition-colors dark:hover:bg-[#1a1a1a]">
+            Family Tree
+          </Link>
+          <Link href="/dashboard" className="flex h-12 w-full items-center justify-center gap-2 px-5 text-white transition-colors dark:hover:bg-[#1a1a1a]">
+            Timeline
+          </Link>
+        </div>
 
-                // Hides alerts if pending invites are cleared
-                if (returnValue) {
-                  setHasPending(true);
-                } else {
-                  setHasPending(false);
-                }
-              }}
-              onFamiliesUpdate={(newFamilies) => setUserFamilies(newFamilies)} 
+        {/*TODO: Add Dropdown View Profile*/}
+        <button className="mt-auto bg-[#657B97] text-white py-2 px-9 rounded-3xl transition-colors dark:hover:bg-[#556880] disabled:opacity-50 w-[110px] h-[50px]"
+          onClick={async () => {
+            try {
+              console.log("opened inbox")
+              setShowInbox(true);
+            } catch (error) {
+              console.log("Inbox error", error);
+              setShowInbox(false);
+            }
+          }}>
+          <span className="relative inline-block">
+            <Image
+              className="dark:invert"
+              src="/mail-svgrepo-com.svg"
+              alt="Inbox"
+              width={50}
+              height={50}
+              priority
             />
-          )}
+            {hasPending && (
+              <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 bg-red-600 rounded-full h-5 w-5"/>
+            )}
+          </span>
+        </button>
+        <button
+            type="submit"
+            className="w-[160px] bg-[#657B97] text-white py-2 rounded-3xl transition-colors dark:hover:bg-[#556880]"
+            onClick={() => logOut(router)}
+            >
+            Sign Out
+        </button>
+        <div className="flex flex-row justify-left p-4">
+          {/*TODO: Implement avatar retrievel from database*/}
+          <Image
+            src="/avatar-girl-svgrepo-com.svg"
+            alt="avatar image"
+            width={80}
+            height={80}
+            priority
+          />
+          <p className="max-w-md text-lg leading-20 text-black pl-5">
+            <strong>{firstName} {lastName}</strong>
+          </p>
+          
+        </div>
+      </aside>
+      
+      <main className="flex min-h-screen w-full flex-row gap-10 py-20 px-16 bg-[#DDE7F4] sm:items-start">
+        {/* Left side of the main area*/}
+        <div className="flex flex-col w-1/2 gap-6 bg-amber-50">
+          <div className="flex flex-col w-full h-1/3 items-center bg-[#657B97] p-8 rounded-4xl justify-center gap-6 text-center sm:items-start sm:text-left">
+            {
+              showInbox && (
+              <Inbox 
+                docRef={doc(db, "users", userID)}
+                uid={userID}
+                families={userFamilies?.map(family => ({ id: family.id, name: family.name })) || []}
+                firstName={firstName}
+                lastName={lastName}
+                onClose={(returnValue: boolean) => {
+                  setShowInbox(false);
 
-          {/*Greeting card*/}
-          <div className="flex max-w-2xl flex-col gap-4 bg-[#657B97] p-10 rounded-lg justify-center items-center ml-90">
+                  // Hides alerts if pending invites are cleared
+                  if (returnValue) {
+                    setHasPending(true);
+                  } else {
+                    setHasPending(false);
+                  }
+                }}
+                onFamiliesUpdate={(newFamilies) => setUserFamilies(newFamilies)} 
+              />
+            )}
+
+            {/*Greeting card*/}
             <div className="flex flex-row items-center gap-4">
               <h1 className="max-w-s text-3xl font-semibold leading-10 tracking-tight text-black">
                 Welcome to Shared Roots.
@@ -118,18 +178,23 @@ export default function Dashboard() {
               priority
               />
             </div>
-              <p className="max-w-md text-lg leading-8 text-black">
-                Greetings {firstName} {lastName}!
-              </p>
+            <p className="max-w-md text-lg leading-8 text-black">
+              Greetings {firstName} {lastName}!
+            </p>
           </div>
 
+          {/* Timeline */}
+          <div className="bg-[#657B97] rounded-4xl p-8 text-center text-black">
+            <p>Timeline stuff</p>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
+
+        {/* Right side of the main area */}
+        {/* Family Tree */}
+        <div className="flex flex-col w-1/2 h-full rounded-4xl gap-4 text-base bg-amber-50">
           <Link href="/familytree" className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#657B97] px-5 text-white transition-colors dark:hover:bg-[#556880] md:w-[158px]">
             Family Tree
-          </Link>   
-        </div>
-        <div className="flex flex-col gap-4 w-full">
+          </Link>
           {/*Input Bar*/}
           <input
             type="text"
@@ -168,55 +233,7 @@ export default function Dashboard() {
           </button>
         </div>
       </main>
-      
-      <aside className="flex flex-col min-h-screen w-120 bg-[white] items-center pt-10 pb-10">
-          <div className="flex flex-row items-center gap-4">
-            {/*TODO: Implement avatar retrievel from database*/}
-            <Image
-              src="/avatar-girl-svgrepo-com.svg"
-              alt="avatar image"
-              width={80}
-              height={80}
-              priority
-            />
-            <p className="max-w-md text-lg leading-20 text-black">
-              <strong>{firstName} {lastName}</strong>
-            </p>
-            {/*TODO: Add Dropdown View Profile*/}
-            <button className="bg-[#657B97] text-white py-2 px-9 rounded-3xl transition-colors dark:hover:bg-[#556880] disabled:opacity-50 w-[110px] h-[50px]"
-              onClick={async () => {
-                try {
-                  console.log("opened inbox")
-                  setShowInbox(true);
-                } catch (error) {
-                  console.log("Inbox error", error);
-                  setShowInbox(false);
-                }
-              }}>
-              <span className="relative inline-block">
-                <Image
-                  className="dark:invert"
-                  src="/mail-svgrepo-com.svg"
-                  alt="Inbox"
-                  width={50}
-                  height={50}
-                  priority
-                />
-                {hasPending && (
-                  <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 bg-red-600 rounded-full h-5 w-5"/>
-                )}
-              </span>
-            </button>
-          </div>
 
-          <button
-              type="submit"
-              className="mt-auto w-[160px] bg-[#657B97] text-white py-2 rounded-3xl transition-colors dark:hover:bg-[#556880]"
-              onClick={() => logOut(router)}
-              >
-              Sign Out
-          </button>
-      </aside>
     </div>
   );
 }
