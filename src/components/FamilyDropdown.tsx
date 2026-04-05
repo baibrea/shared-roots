@@ -50,7 +50,7 @@ export default function FamilyDropdown({
 								onCreateFamily();
 								setIsActive(false);
 							}}
-							className="w-full py-3 px-5 text-left hover:bg-gray-200 rounded-md"
+							className="w-full py-3 px-5 text-left hover:bg-gray-200 rounded-md font-semibold"
 						>
 							+ Create Family
 						</button>

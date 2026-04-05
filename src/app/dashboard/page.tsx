@@ -139,7 +139,7 @@ export default function Dashboard() {
             >
             Sign Out
         </button>
-        <div className="flex flex-row justify-left p-4">
+        <div className="flex flex-col justify-left items-center text-center p-4 lg:flex-row">
           {/*TODO: Implement avatar retrievel from database*/}
           <Image
             src="/avatar-girl-svgrepo-com.svg"
@@ -190,18 +190,27 @@ export default function Dashboard() {
         <div className="flex flex-col w-1/2 h-full rounded-4xl gap-4 p-4 text-base bg-red-200">
           <div className="flex flex-row items-center justify-between w-full gap-4">
             
-            <FamilyDropdown 
-              families={userFamilies}
-              activeFamilyId={activeFamilyId}
-              onSelectFamily={(family) => {
-                setActiveFamilyId(family.id);
-                setActiveFamilyName(family.name);
-              }}
-              onCreateFamily={() => {
-                setShowCreateFamily(true);
-              }}
-            />
-            
+            {userFamilies.length > 0 ? (
+              <FamilyDropdown 
+                families={userFamilies}
+                activeFamilyId={activeFamilyId}
+                onSelectFamily={(family) => {
+                  setActiveFamilyId(family.id);
+                  setActiveFamilyName(family.name);
+                }}
+                onCreateFamily={() => {
+                  setShowCreateFamily(true);
+                }}
+              />
+            ) : (
+              <button
+                className="w-1/3 min-w-40 max-w-60 py-3 px-5 text-left bg-white hover:bg-gray-100 rounded-md font-semibold text-black"
+                onClick={() => setShowCreateFamily(true)}
+              >
+                + Create Family
+              </button>
+            )}
+
             <button className="bg-[#657B97] text-white py-2 px-9 rounded-md transition-colors dark:hover:bg-[#556880] disabled:opacity-50 w-[110px] h-[50px]"
               onClick={async () => {
                 try {
@@ -219,51 +228,10 @@ export default function Dashboard() {
           </button>
         </div>
 
-          <Link href="/familytree" className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#657B97] px-5 text-white transition-colors dark:hover:bg-[#556880] md:w-[158px]">
-            Family Tree
-          </Link>
-          {/*Input Bar*/}
-          <input
-            type="text"
-            value={activeFamilyName}
-            onChange={(e) => setActiveFamilyName(e.target.value)}
-            placeholder="Enter family name"
-            className="w-full px-4 py-2 border border-solid border-black/[.08] rounded-full dark:border-white/[.145] dark:bg-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#698b6a]"
-          />
-          <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-            <button
-              className="flex h-12 w-full items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-              onClick={async () => {
-                try {
-                  const family = await createFamily(activeFamilyName, firstName, lastName, userID);
-                  console.log("Succesfully created family:", activeFamilyName);
-                  setFamilyCreated(true);
+        <Link href="/familytree" className="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-white px-5 text-black transition-colors dark:hover:bg-[#556880]">
+          Go to Family Tree
+        </Link>
 
-                  // Update userFamilies state to include the newly created family
-                  const newFamily = { id: family, name: activeFamilyName };
-
-                  setUserFamilies(prev => [...prev, newFamily]);
-
-                  setActiveFamilyId(family);
-                  setActiveFamilyName(activeFamilyName);
-
-                } catch (error) {
-                  console.error("Failed to create family:", error);
-                  setFamilyCreated(false);
-                }
-              }}
-            >
-              Create Family
-            </button>
-          </div>
-          <button
-            className="flex h-12 w-full items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            onClick={async () => {
-              console.log(userFamilies);
-            }}
-          >
-            View Families
-          </button>
         </div>
       </main>
 
