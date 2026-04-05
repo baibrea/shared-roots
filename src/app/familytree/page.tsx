@@ -1,6 +1,6 @@
 "use client";
 
-import { act, useEffect, useState } from "react";
+import { act, use, useEffect, useState } from "react";
 import AddPersonForm from "@/lib/AddPersonForm";
 import { usePeople } from "@/lib/PeopleContext";
 import { Person } from "@/types/person";
@@ -8,6 +8,9 @@ import VisualGraph from "@/components/VisualGraph";
 import SearchBar from "@/components/SearchBar";
 import UpdatePersonForm from "@/lib/UpdatePersonForm";
 import { useFamily } from "@/lib/FamilyContext";
+import { auth, db } from "@/lib/firebase";
+import { uploadMedia } from "@/lib/family";
+import { doc, getDoc } from "@firebase/firestore";
 
 export default function FamilyTreePage() {
   const { people } = usePeople();
@@ -20,6 +23,7 @@ export default function FamilyTreePage() {
   const selectedPerson = people.find(p => p.id === selectedPersonId) || null;
   const activePerson = selectedPerson || people[0] || null;
   const { activeFamily } = useFamily();
+  const currentUser = auth.currentUser;
 
   const filteredPeople = people.filter((p) => {
     const fullName = (p.firstName + " " + p.lastName).toLowerCase();
@@ -109,6 +113,19 @@ export default function FamilyTreePage() {
         {!selectedPerson && (
           <div className="flex flex-col h-full">
             <h2 className="text-xl font-bold mb-4">Directory</h2>
+            <div className="flex flex-row">
+              <input type="file" id="mediaFile"></input>
+              <button 
+                className="ml-4 px-4 py-2 mb-4 bg-[#2c3224] text-white rounded-full hover:bg-[#3E4B2C] cursor-pointer"
+                onClick={() => {uploadMedia(
+                  activeFamily?.id || "",
+                  (document.getElementById("mediaFile") as HTMLInputElement).files?.[0] || new File([], ""),
+                  (document.getElementById("mediaFile") as HTMLInputElement).files?.[0].type || "unknown",
+                  "Uploaded test media",
+                  currentUser?.uid || ""
+                )}}
+              >Upload</button>
+            </div>
             
             {/* New Component Integrated Here */}
             <SearchBar 

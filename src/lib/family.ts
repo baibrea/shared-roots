@@ -1,6 +1,7 @@
 import { doc, addDoc, getDoc, setDoc, updateDoc, collection, arrayUnion, getDocs } from "firebase/firestore";
 import { db, storage } from "@/lib/firebase";
-import { uploadBytes, ref } from "@firebase/storage";
+import { uploadBytes, ref, getDownloadURL } from "@firebase/storage";
+import { get } from "http";
 
 // Function to create a new family. Returns family ID
 export async function createFamily(
@@ -87,7 +88,7 @@ export async function joinFamily(
 // Function to upload media file to family's cloud
 export async function uploadMedia(
     familyID: string,
-    mediaURL: string,
+    media: File,
     mediaType: string,
     description: string,
     uploader: string
@@ -95,22 +96,29 @@ export async function uploadMedia(
     // Gets family document and checks if it exists
     const familyRef = doc(db, "families", familyID);
     const familySnap = await getDoc(familyRef);
+
+    const userRef = doc(db, "users", uploader);
+    const userSnap = await getDoc(userRef);
+    const uploaderName = userSnap.data()?.firstName + " " + userSnap.data()?.lastName;
+
     if (!familySnap.exists()) {
         throw new Error("Family does not exist");
     } else {
 
+        // Uploads the media to the cloud
+        const fileName = media.name + "-" + crypto.randomUUID();
+        const storageRef = ref(storage, `families/${familyID}/media/${fileName}`);
+        await uploadBytes(storageRef, media);
+
         // Adds media information to "media" subcollection
         await addDoc(collection(db, "families", familyID, "media"), {
-            mediaURL,
+            mediaURL: await getDownloadURL(storageRef),
             mediaType,
             description,
-            uploader,
-            uploadDate: new Date()
+            uploader: uploaderName,
+            uploadDate: new Date().getTime()
         });
 
-        // Uploads the media to the cloud
-        const storageRef = ref(storage, `families/${familyID}/media/${mediaURL}`);
-        await uploadBytes(storageRef, mediaURL as unknown as Blob);
     }
 }
 
