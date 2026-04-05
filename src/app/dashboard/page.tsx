@@ -23,9 +23,6 @@ export default function Dashboard() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [userID, setUserID] = useState("");
-  const [inputText, setInputText] = useState("");
-  const [activeFamilyId, setActiveFamilyId] = useState("");
-  const [activeFamilyName, setActiveFamilyName] = useState("");
   const [userFamilies, setUserFamilies] = useState<Family[]>([]);
 
   // Family Booleans
@@ -44,7 +41,7 @@ export default function Dashboard() {
   // Family Creation/Selection
   const [showCreateFamily, setShowCreateFamily] = useState(false);
   const [newFamilyName, setNewFamilyName] = useState("");
-  const { setActiveFamily } = useFamily();
+  const { activeFamily, setActiveFamily } = useFamily();
 
   // Router for redirecting
   const router = useRouter();
@@ -63,7 +60,13 @@ export default function Dashboard() {
               setFirstName(data.firstName);
               setLastName(data.lastName);
               setUserID(data.uid);
-              setUserFamilies(data.families || []);
+
+              const families = data.families || [];
+              setUserFamilies(families);
+
+              if (!activeFamily &&families.length > 0) {
+                setActiveFamily(families[0]);
+              }
 
               // Check for pending invites
               const inboxAlert = onSnapshot(
@@ -83,7 +86,7 @@ export default function Dashboard() {
 
     return () => unsubscribe();
 
-  }, []);
+  }, [activeFamily]);
 
   return (
     <div className="flex min-h-screen bg-zinc-50 font-sans dark:bg-[#FFFFFF]">
@@ -195,12 +198,6 @@ export default function Dashboard() {
             {userFamilies.length > 0 ? (
               <FamilyDropdown 
                 families={userFamilies}
-                activeFamilyId={activeFamilyId}
-                onSelectFamily={(family) => {
-                  setActiveFamily(family);
-                  setActiveFamilyId(family.id);
-                  setActiveFamilyName(family.name);
-                }}
                 onCreateFamily={() => {
                   setShowCreateFamily(true);
                 }}
@@ -304,8 +301,7 @@ export default function Dashboard() {
 
                   setUserFamilies(prev => [...prev, newFamily]);
 
-                  setActiveFamilyId(familyId);
-                  setActiveFamilyName(newFamilyName);
+                  setActiveFamily(newFamily);
 
                   setShowCreateFamily(false);
 

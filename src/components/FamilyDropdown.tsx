@@ -1,3 +1,4 @@
+import { useFamily } from "@/lib/FamilyContext";
 import { useState } from "react";
 
 type Family = {
@@ -7,17 +8,15 @@ type Family = {
 
 export default function FamilyDropdown({
 	families,
-	activeFamilyId,
-	onSelectFamily,
+
 	onCreateFamily
 }: {
 	families: Family[];
-	activeFamilyId: string | null;
-	onSelectFamily: (family : Family) => void;
 	onCreateFamily: () => void;
 }) {
 
   const [isActive, setIsActive] = useState(false);
+	const { activeFamily, setActiveFamily } = useFamily();
 
   return (
 		<div className="relative w-1/3 min-w-40 max-w-60">
@@ -25,7 +24,7 @@ export default function FamilyDropdown({
 				onClick={() => setIsActive(!isActive)}
 				className="bg-white w-full rounded-md text-black px-5 py-3 text-left"
 			>
-				{families.find(f => f.id === activeFamilyId)?.name || "Select Family"}
+				{activeFamily?.name || "Select Family"}
 			</button>
 
 			{isActive && (
@@ -36,7 +35,7 @@ export default function FamilyDropdown({
 							<button
 								key={family.id}
 								onClick={() => {
-									onSelectFamily(family);
+									setActiveFamily(family);
 									setIsActive(false);
 								}}
 								className="w-full py-3 px-5 text-left hover:bg-gray-200 rounded-md"
