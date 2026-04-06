@@ -8,8 +8,17 @@ import VisualGraph from "@/components/VisualGraph";
 import SearchBar from "@/components/SearchBar";
 import UpdatePersonForm from "@/lib/UpdatePersonForm";
 import { useFamily } from "@/lib/FamilyContext";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth, db } from "@/lib/firebase";
+import { doc, getDoc } from "@firebase/firestore";
+import FamilyDropdown from "@/components/FamilyDropdown";
 
 export default function FamilyTreePage() {
+  type Family = {
+    id: string;
+    name: string;
+  };
+
   const { people } = usePeople();
   const [showForm, setShowForm] = useState(false);
   const [referencePerson, setReferencePerson] = useState<Person | null>(null);
@@ -20,6 +29,26 @@ export default function FamilyTreePage() {
   const selectedPerson = people.find(p => p.id === selectedPersonId) || null;
   const activePerson = selectedPerson || people[0] || null;
   const { activeFamily } = useFamily();
+  const [userFamilies, setUserFamilies] = useState<Family[]>([]);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      
+      if (user) {
+        const docRef = doc(db, "users", user.uid);
+        const docSnap = await getDoc(docRef);
+        const data = docSnap.data();
+
+        if (data) {
+          const families = data.families || [];
+          setUserFamilies(families);
+        }
+      }
+
+    });
+    return () => unsubscribe();
+  }, []);
+
 
   const filteredPeople = people.filter((p) => {
     const fullName = (p.firstName + " " + p.lastName).toLowerCase();
@@ -71,6 +100,19 @@ export default function FamilyTreePage() {
     <div className="flex h-screen overflow-hidden">
       {/* Family Tree */}
       <div className="w-3/4 p-10 overflow-y-auto bg-[#2c3224] border-r border-gray-200 flex flex-col">
+        {userFamilies.length > 0 ? (
+          <FamilyDropdown 
+            families={userFamilies}
+            onCreateFamily={() => {}}
+            showCreate={false}
+          />
+        ) : (
+          <p
+            className="w-1/3 min-w-40 max-w-60 py-3 px-5 text-left bg-white hover:bg-gray-100 rounded-md font-semibold text-black"
+          >
+            No families found.
+          </p>
+        )}
 
         {people.length === 0 && <p>No people added yet.</p>}
 

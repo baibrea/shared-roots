@@ -197,6 +197,7 @@ export default function Dashboard() {
                 onCreateFamily={() => {
                   setShowCreateFamily(true);
                 }}
+                showCreate={true}
               />
             ) : (
               <button
