@@ -64,10 +64,6 @@ export default function Dashboard() {
               const families = data.families || [];
               setUserFamilies(families);
 
-              if (!activeFamily && families.length > 0) {
-                setActiveFamily(families[0]);
-              }
-
               // Check for pending invites
               const inboxAlert = onSnapshot(
                 query(collection(db, "users", user.uid, "inbox"), where("status", "==", "pending")),

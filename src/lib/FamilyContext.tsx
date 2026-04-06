@@ -20,6 +20,8 @@ export function FamilyProvider({ children }: { children: React.ReactNode }) {
     const [activeFamily, setActiveFamily] = useState<Family | null>(null);
     const [user, setUser] = useState<User | null>(null);
 
+    // Checks for login/logouts and updates the active family accordingly
+    // Checks local storage for the last active family for that user and sets it on login
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (currUser) => {
             setUser(currUser);
@@ -40,6 +42,7 @@ export function FamilyProvider({ children }: { children: React.ReactNode }) {
         return () => unsubscribe();
     }, []);
 
+    // Updates local storage every time active family changes
     useEffect(() => {
         if (!user) {
             return;

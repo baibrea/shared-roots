@@ -31,6 +31,7 @@ export default function FamilyDropdown({
 				<div className="absolute w-full mt-3 rounded-md shadow-lg">
 					<ul className="w-full bg-white text-black rounded-md">
 
+						{/* Dropdown List of families the user belongs to */}
 						{families.map(family => (
 							<button
 								key={family.id}
@@ -44,6 +45,7 @@ export default function FamilyDropdown({
 							</button>
 						))}
 
+						{/* Option to create a new family */}
 						<button
 							onClick={() => {
 								onCreateFamily();
