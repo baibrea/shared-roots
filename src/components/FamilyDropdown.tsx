@@ -1,5 +1,5 @@
 import { useFamily } from "@/lib/FamilyContext";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 type Family = {
 	id: string;
@@ -16,14 +16,43 @@ export default function FamilyDropdown({
 	showCreate?: boolean;
 }) {
 
-  const [isActive, setIsActive] = useState(false);
+    const [isActive, setIsActive] = useState(false);
 	const { activeFamily, setActiveFamily } = useFamily();
 
+	const dropdownRef = useRef<HTMLDivElement>(null);
+
+	useEffect(() => {
+	  const handleKeyDown = (e: KeyboardEvent) => {
+		if (e.key === "Escape") {
+		  setIsActive(false);
+		}
+	  };
+
+	  window.addEventListener("keydown", handleKeyDown);
+
+	  return () => window.removeEventListener("keydown", handleKeyDown);
+	  }, []);
+
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+				setIsActive(false);
+			}
+		};
+
+		document.addEventListener("mousedown", handleClickOutside);
+
+		return () => {
+			document.removeEventListener("mousedown", handleClickOutside);
+		};
+	}, []);
+
+
   return (
-		<div className="relative w-1/3 min-w-40 max-w-60">
+		<div ref={dropdownRef} className="relative w-1/3 min-w-40 max-w-60">
 			<button
 				onClick={() => setIsActive(!isActive)}
-				className="bg-white w-full border-2 border-gray-300 rounded-md text-black px-5 py-3 text-left"
+				className="bg-white w-full border-2 border-gray-300 rounded-md text-black px-5 py-3 text-left focus:outline-none"
 			>
 				{activeFamily?.name || "Select Family"}
 			</button>
