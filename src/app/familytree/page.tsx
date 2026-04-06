@@ -196,7 +196,7 @@ export default function FamilyTreePage() {
                   Children: {getPeopleNames(selectedPerson.children)}
                 </p>
                 <p>
-                  Spouse: {getPersonName(selectedPerson.spouse)}
+                  Spouse(s): {getPeopleNames(selectedPerson.spouses)}
                 </p>
               </div>
               

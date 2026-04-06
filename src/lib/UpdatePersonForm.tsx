@@ -23,7 +23,7 @@ export default function UpdatePersonForm({
         healthDetails: person.healthDetails,
         parents: person.parents,
         children: person.children,
-        spouse: person.spouse
+        spouses: person.spouses
     });
 
     const isFormValid = formData.firstName?.trim() && formData.lastName?.trim();

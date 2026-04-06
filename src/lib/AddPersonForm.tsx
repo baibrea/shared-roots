@@ -29,7 +29,7 @@ export default function AddPersonForm({
         healthDetails: '',
         parents: [],
         children: [],
-        spouse: ''
+        spouses: []
     });
 
     const isFormValid = formData.firstName?.trim() && formData.lastName?.trim();
@@ -56,7 +56,7 @@ export default function AddPersonForm({
             healthDetails: '', 
             parents: [], 
             children: [], 
-            spouse: ''
+            spouses: []
         });
 
         onClose();

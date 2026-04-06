@@ -14,5 +14,5 @@ export interface Person {
 
   parents: string[];
   children: string[];
-  spouse: string;
+  spouses: string[];
 }
