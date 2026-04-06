@@ -19,11 +19,16 @@ export default function Dashboard() {
     name: string;
   };
 
+  type FamilyMember = {
+    name: string;
+  }
+
   // Declares User Information Variables
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [userID, setUserID] = useState("");
   const [userFamilies, setUserFamilies] = useState<Family[]>([]);
+  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
 
   // Family Booleans
   const [familyCreated, setFamilyCreated] = useState(false);
@@ -82,6 +87,28 @@ export default function Dashboard() {
 
     return () => unsubscribe();
 
+  }, []);
+
+  useEffect(() => {
+    if (!activeFamily?.id) {
+      return;
+    }
+
+    const membersRef = collection(db, "families", activeFamily.id, "members");
+
+    const unsubscribeMembers = onSnapshot(membersRef, (snapshot) => {
+      const membersData = snapshot.docs.map((docSnap) => ({
+        id: docSnap.id,
+        ...docSnap.data()
+      })) as FamilyMember[];
+
+      setFamilyMembers(membersData);  
+    });
+
+    return () => {
+      setFamilyMembers([]);
+      unsubscribeMembers();
+    };
   }, [activeFamily]);
 
   return (
@@ -222,12 +249,35 @@ export default function Dashboard() {
                   Invite
                 </p>
               </span>
-          </button>
-        </div>
+            </button>
+          </div>
 
-        <Link href="/familytree" className="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-white px-5 text-black transition-colors dark:hover:bg-[#556880]">
-          Go to Family Tree
-        </Link>
+          <div className="flex flex-col w-full h-full text-center text-black bg-blue">
+            <ul className="gap-4 flex flex-col">      
+              {familyMembers.length === 0 ? (
+                <li>
+                  Create a family to get started!
+                </li>
+              ) : (    
+                <>
+                  <Link href="/familytree" className="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-white px-5 text-black transition-colors dark:hover:bg-[#556880]">
+                    Go to Family Tree
+                  </Link>
+                  <h3 className="py-2 font-bold text-xl"> Users </h3>
+                  {familyMembers.map((member) => (
+                    <li key={member.name}
+                    className="bg-white rounded-md hover:bg-gray-100 transition-colors"
+                    >
+                      <button className="w-full h-full p-3 text-black text-left">
+                        {member.name}
+                      </button>
+                    </li>
+                  ))}
+                </>
+              )}
+            </ul>
+
+          </div>
 
         </div>
       </main>
