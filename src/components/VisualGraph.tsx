@@ -377,14 +377,18 @@ function buildGraph(
 }
 
 // ─── Inner flow component (requires ReactFlowProvider context) ─────────────────
-function Inner({ nodes: inNodes, edges: inEdges, onNodeClick }: { 
+function Inner({ nodes: inNodes, edges: inEdges, onNodeClick, focusNodeId, focusZoom, onRequestFit }: { 
   nodes: Node[]; 
   edges: Edge[]; 
   onNodeClick: (event: any, node: Node) => void;
+  focusNodeId?: string | null;
+  focusZoom?: number;
+  onRequestFit?: () => void;
 }) {
   const [rfNodes, setRfNodes, onNodesChange] = useNodesState(inNodes);
   const [rfEdges, setRfEdges, onEdgesChange] = useEdgesState(inEdges);
-  const { fitView } = useReactFlow();
+  const { fitView, setCenter, setViewport } = useReactFlow();
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   // Sync whenever the computed layout changes
   useEffect(() => {
@@ -392,30 +396,95 @@ function Inner({ nodes: inNodes, edges: inEdges, onNodeClick }: {
     setRfEdges(inEdges);
   }, [inNodes, inEdges, setRfNodes, setRfEdges]);
 
-  // Re-fit the view after each layout change
+  // Re-fit the view after each layout change (or focus a node when requested).
+  // Do NOT auto-clear focus; leaving `focusNodeId` set prevents automatic fitView
+  // so the view stays zoomed until the user requests a fit.
   useEffect(() => {
-    const t = setTimeout(() => fitView({ padding: 0.25, duration: 300 }), 60);
+    const t = setTimeout(() => {
+      if (focusNodeId) {
+        const node = inNodes.find(n => n.id === focusNodeId);
+        if (node) {
+          const centerX = (node.position as any).x + NODE_W / 2;
+          const centerY = (node.position as any).y + NODE_H / 2;
+          const zoom = typeof focusZoom === "number" ? focusZoom : 1.3;
+
+          // If setViewport is available, compute the transform so the desired
+          // world coordinate (centerX, centerY) appears at the screen center
+          // with the requested zoom: translate = [w/2 - zoom*tx, h/2 - zoom*ty].
+          if (setViewport && containerRef.current) {
+            const w = containerRef.current.clientWidth || window.innerWidth;
+            const h = containerRef.current.clientHeight || window.innerHeight;
+            const tx = w / 2 - zoom * centerX;
+            const ty = h / 2 - zoom * centerY;
+            try {
+              // @ts-expect - runtime types may vary
+              setViewport({ x: tx, y: ty, zoom }, { duration: 300 });
+            } catch (e) {
+              // ignore and fallback
+            }
+            return;
+          }
+
+          // Fallback: try setCenter (older API). Note many versions ignore the
+          // zoom parameter; if so, the zoom may not change here.
+          if (setCenter) {
+            try {
+              // @ts-expect-error - runtime types may vary
+              setCenter(centerX, centerY, zoom, { duration: 300 });
+            } catch (e) {
+              try {
+                // @ts-expect-error - runtime types may vary
+                setCenter(centerX, centerY, zoom);
+              } catch (e) {
+                // ignore
+              }
+            }
+            return;
+          }
+        }
+      }
+
+      fitView({ padding: 0.25, duration: 300 });
+    }, 60);
     return () => clearTimeout(t);
-  }, [inNodes, fitView]);
+  }, [inNodes, fitView, focusNodeId, focusZoom, setCenter]);
 
   return (
-    <ReactFlow
-      nodes={rfNodes}
-      edges={rfEdges}
-      onNodesChange={onNodesChange}
-      onEdgesChange={onEdgesChange}
-      onNodeClick={onNodeClick}
-      nodeTypes={nodeTypes}
-      nodesDraggable={false}
-      nodesConnectable={false}
-      elementsSelectable={false}
-      minZoom={0.1}
-      maxZoom={2}
-      proOptions={{ hideAttribution: true }}
-    >
-      <Background color="#3a4232" gap={20} size={1} />
-      <Controls showInteractive={false} />
-    </ReactFlow>
+    <div className="w-full h-full relative" ref={containerRef}>
+      <ReactFlow
+        nodes={rfNodes}
+        edges={rfEdges}
+        onNodesChange={onNodesChange}
+        onEdgesChange={onEdgesChange}
+        onNodeClick={onNodeClick}
+        nodeTypes={nodeTypes}
+        nodesDraggable={false}
+        nodesConnectable={false}
+        elementsSelectable={false}
+        minZoom={0.1}
+        maxZoom={2}
+        proOptions={{ hideAttribution: true }}
+      >
+        <Background color="#3a4232" gap={20} size={1} />
+        <Controls showInteractive={false} />
+      </ReactFlow>
+
+      <div style={{ position: "absolute", top: 8, right: 8, zIndex: 40 }}>
+        <button
+          onClick={() => {
+            try {
+              fitView({ padding: 0.25, duration: 300 });
+            } catch (e) {
+              // ignore
+            }
+            if (onRequestFit) onRequestFit();
+          }}
+          className="px-2 py-1 rounded bg-gray-800 text-white text-sm shadow"
+        >
+          Reset View
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -448,6 +517,7 @@ export default function VisualGraph({
 
   const [displayNodes, setDisplayNodes] = useState<Node[]>(() => graph.nodes);
   const [displayEdges, setDisplayEdges] = useState<Edge[]>(() => graph.edges);
+  const [focusNodeId, setFocusNodeId] = useState<string | null>(null);
 
   // Compute stable node positions in an effect so we can safely read/update refs
   useEffect(() => {
@@ -473,15 +543,24 @@ export default function VisualGraph({
   }, [graph]);
 
   const handleNodeClick = useCallback((event: any, node: Node) => {
+    // Remember the clicked node so Inner can center+zoom on it after layout.
+    setFocusNodeId(node.id);
     if (node.data?.onSelect) {
       node.data.onSelect();
     }
-  }, []);
+  }, [setFocusNodeId]);
 
   return (
     <ReactFlowProvider>
       <div className="w-full h-full">
-        <Inner nodes={displayNodes} edges={displayEdges} onNodeClick={handleNodeClick} />
+        <Inner
+          nodes={displayNodes}
+          edges={displayEdges}
+          onNodeClick={handleNodeClick}
+          focusNodeId={focusNodeId}
+          focusZoom={1.3}
+          onRequestFit={() => setFocusNodeId(null)}
+        />
       </div>
     </ReactFlowProvider>
   );
