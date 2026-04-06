@@ -159,83 +159,84 @@ function buildGraph(
 
   // ── Pass 1: compute positions for every visible person ──────────────────────
   levelKeys.forEach((level, rowIndex) => {
-    const peopleInLevel = levels[level];
-    const units: Person[][] = [];
+    const peopleInLevel = levels[level] ?? [];
 
-    // Pre-compute all couples in this level with deterministic keys
-    const possibleCouples: Array<{ couple: Person[]; key: string }> = [];
-    const coupleKeysUsed = new Set<string>();
-
-    peopleInLevel.forEach(p => {
-      for (const spouseId of p.spouses ?? []) {
-        const spouse = peopleInLevel.find(pl => pl.id === spouseId);
-        if (!spouse) continue;
-
-        // Create stable pair (always sorted by ID)
-        const pair = [p, spouse].sort((a, b) => a.id.localeCompare(b.id));
-        const coupleKey = pair.map(x => x.id).join("--");
-
-        if (!coupleKeysUsed.has(coupleKey)) {
-          coupleKeysUsed.add(coupleKey);
-          possibleCouples.push({ couple: pair, key: coupleKey });
-        }
+    // Build adjacency for spouse links within this level and compute connected components.
+    const idToPerson = new Map(peopleInLevel.map(p => [p.id, p]));
+    const adj: Record<string, Set<string>> = {};
+    peopleInLevel.forEach(p => (adj[p.id] = new Set<string>()));
+    for (const p of peopleInLevel) {
+      for (const sid of p.spouses ?? []) {
+        if (!idToPerson.has(sid)) continue;
+        adj[p.id].add(sid);
+        adj[sid].add(p.id);
       }
-    });
-
-    // Sort couples by key for deterministic layout
-    possibleCouples.sort((a, b) => a.key.localeCompare(b.key));
-
-    // Add couples to units
-    const processedInUnits = new Set<string>();
-    for (const { couple } of possibleCouples) {
-      units.push(couple);
-      processedInUnits.add(couple[0].id);
-      processedInUnits.add(couple[1].id);
     }
 
-    // Add singles
-    peopleInLevel.forEach(p => {
-      if (!processedInUnits.has(p.id)) {
-        units.push([p]);
-        processedInUnits.add(p.id);
+    // Discover connected components (clusters) of spouses; each cluster becomes a layout unit.
+    const visited = new Set<string>();
+    const units: Person[][] = [];
+    const sortedPeople = [...peopleInLevel].sort((a, b) => a.id.localeCompare(b.id));
+    for (const p of sortedPeople) {
+      if (visited.has(p.id)) continue;
+      const compIds: string[] = [];
+      const q = [p.id];
+      visited.add(p.id);
+      while (q.length) {
+        const id = q.shift()!;
+        compIds.push(id);
+        for (const nb of adj[id] ?? []) {
+          if (!visited.has(nb)) {
+            visited.add(nb);
+            q.push(nb);
+          }
+        }
       }
-    });
+      const compPersons = compIds.map(id => idToPerson.get(id)!).sort((a, b) => a.id.localeCompare(b.id));
+      units.push(compPersons);
+    }
 
+    // Sort units deterministically
     units.sort((a, b) => a[0].id.localeCompare(b[0].id));
 
+    // Compute total width where each unit can be larger than two people
     const totalWidth = units.reduce((sum, unit, i) => {
-      const unitW = unit.length === 2 ? NODE_W * 2 + SPOUSE_GAP : NODE_W;
+      const unitW = unit.length * NODE_W + Math.max(0, unit.length - 1) * SPOUSE_GAP;
       return sum + unitW + (i > 0 ? UNIT_GAP : 0);
     }, 0);
 
     let curX = -totalWidth / 2;
-    const y  = rowIndex * (NODE_H + ROW_GAP);
+    const y = rowIndex * (NODE_H + ROW_GAP);
 
+    // Assign positions inside each unit (left-to-right), and record layout keys
     units.forEach((unit, unitIndex) => {
-      if (unit.length === 2) {
-        const [p1, p2] = unit;
-        posMap[p1.id] = { x: curX, y };
-        posMap[p2.id] = { x: curX + NODE_W + SPOUSE_GAP, y };
+      unit.forEach((member, i) => {
+        const x = curX + i * (NODE_W + SPOUSE_GAP);
+        posMap[member.id] = { x, y };
+        layoutKeys[member.id] = `${level}:${rowIndex}:${totalWidth}:${unitIndex}:${i}`;
+      });
+      const unitW = unit.length * NODE_W + Math.max(0, unit.length - 1) * SPOUSE_GAP;
+      curX += unitW + UNIT_GAP;
+    });
 
-        // Stable layout slot key: include totalWidth so cache invalidates when generation size changes
-        layoutKeys[p1.id] = `${level}:${rowIndex}:${totalWidth}:${unitIndex}:0`;
-        layoutKeys[p2.id] = `${level}:${rowIndex}:${totalWidth}:${unitIndex}:1`;
-
-        const coupleKey = [p1.id, p2.id].sort().join("--");
+    // Create couple records for every visible spouse-pair in this level (used for children routing)
+    for (const p of peopleInLevel) {
+      for (const spouseId of p.spouses ?? []) {
+        if (!posMap[p.id] || !posMap[spouseId]) continue;
+        const coupleKey = [p.id, spouseId].sort().join("--");
+        if (couplesByKey[coupleKey]) continue;
+        const midX = (posMap[p.id].x + posMap[spouseId].x) / 2 + NODE_W / 2;
+        const midY = (posMap[p.id].y + posMap[spouseId].y) / 2 + NODE_H / 2;
         couplesByKey[coupleKey] = {
           coupleId: `couple-${coupleKey}`,
-          p1Id: p1.id,
-          p2Id: p2.id,
-          midX: curX + NODE_W + SPOUSE_GAP / 2,
-          midY: y + NODE_H / 2,
+          p1Id: p.id,
+          p2Id: spouseId,
+          midX,
+          midY,
         };
-        curX += NODE_W * 2 + SPOUSE_GAP + UNIT_GAP;
-      } else {
-        posMap[unit[0].id] = { x: curX, y };
-        layoutKeys[unit[0].id] = `${level}:${rowIndex}:${totalWidth}:${unitIndex}:0`;
-        curX += NODE_W + UNIT_GAP;
       }
-    });
+    }
+    
   });
 
   // ── Pass 2: build nodes ──────────────────────────────────────────────────────
