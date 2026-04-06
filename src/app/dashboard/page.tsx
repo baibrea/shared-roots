@@ -64,7 +64,7 @@ export default function Dashboard() {
               const families = data.families || [];
               setUserFamilies(families);
 
-              if (!activeFamily &&families.length > 0) {
+              if (!activeFamily && families.length > 0) {
                 setActiveFamily(families[0]);
               }
 
