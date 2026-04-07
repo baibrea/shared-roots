@@ -55,24 +55,24 @@ export default function MediaView ({
                 </div>
 
                 <div className="grid grid-cols-3 gap-6">
-                    {media.map((m, index) => (
+                    {media.map((mediaFile, index) => (
                         <div key={index} className="flex flex-col items-center gap-2">
-                            {m.mediaType.startsWith("image/") ? (
+                            {mediaFile.mediaType.startsWith("image/") ? (
                                 <Image 
-                                    src={m.url}
-                                    alt={m.description}
+                                    src={mediaFile.url}
+                                    alt={mediaFile.description}
                                     width={200}
                                     height={200}
                                     className="object-cover rounded-lg"
                                 />
                             ) : (
                                 <video controls className="w-full rounded-lg">
-                                    <source src={m.url} type={m.mediaType} />
+                                    <source src={mediaFile.url} type={mediaFile.mediaType} />
                                     Your browser does not support the video tag.
                                 </video>
                             )}
-                            <p className="text-sm text-gray-600">{m.description}</p>
-                            <p className="text-xs text-gray-400">Uploaded by {m.uploader} on {new Date(m.uploadDate).toLocaleDateString()}</p>
+                            <p className="text-sm text-gray-600">{mediaFile.description}</p>
+                            <p className="text-xs text-gray-400">Uploaded by {mediaFile.uploader} on {new Date(mediaFile.uploadDate).toLocaleDateString()}</p>
                         </div>
                     ))}
                 </div>

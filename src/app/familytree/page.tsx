@@ -11,6 +11,7 @@ import { useFamily } from "@/lib/FamilyContext";
 import { auth, db } from "@/lib/firebase";
 import { uploadMedia } from "@/lib/media";
 import { doc, getDoc } from "@firebase/firestore";
+import MediaView from "@/components/MediaView";
 
 export default function FamilyTreePage() {
   const { people } = usePeople();
@@ -25,6 +26,7 @@ export default function FamilyTreePage() {
   const { activeFamily } = useFamily();
   const currentUser = auth.currentUser;
   const familyView = true; // Indicates for media upload/retrieval that it is the family tree page
+  const [showMediaWindow, setShowMediaWindow] = useState(false);
 
   const filteredPeople = people.filter((p) => {
     const fullName = (p.firstName + " " + p.lastName).toLowerCase();
@@ -170,7 +172,10 @@ export default function FamilyTreePage() {
                 <div className="py-30 bg-[#B5B5B5] rounded-2xl mb-10">
                   image
                 </div>
-                <button className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 rounded-full w-10 h-10 hover:bg-gray-300 cursor-pointer">
+                <button 
+                  className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 rounded-full w-10 h-10 hover:bg-gray-300 cursor-pointer"
+                  onClick={() => setShowMediaWindow(true)}
+                >
                   <img src="/edit-svgrepo-com.svg" alt="Edit" />
                 </button>
               </span>
@@ -240,6 +245,15 @@ export default function FamilyTreePage() {
               <UpdatePersonForm
                 person={editingPerson}
                 onClose={() => setEditingPerson(null)}
+              />
+            )}
+
+            {showMediaWindow && (
+              <MediaView 
+                uid={currentUser?.uid || ""}
+                familyID={activeFamily?.id || ""}
+                familyView={true}
+                onClose={() => setShowMediaWindow(false)}
               />
             )}
 
