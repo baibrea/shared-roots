@@ -9,7 +9,7 @@ import SearchBar from "@/components/SearchBar";
 import UpdatePersonForm from "@/lib/UpdatePersonForm";
 import { useFamily } from "@/lib/FamilyContext";
 import { auth, db } from "@/lib/firebase";
-import { uploadMedia } from "@/lib/family";
+import { uploadMedia } from "@/lib/media";
 import { doc, getDoc } from "@firebase/firestore";
 
 export default function FamilyTreePage() {
@@ -24,6 +24,7 @@ export default function FamilyTreePage() {
   const activePerson = selectedPerson || people[0] || null;
   const { activeFamily } = useFamily();
   const currentUser = auth.currentUser;
+  const familyView = true; // Indicates for media upload/retrieval that it is the family tree page
 
   const filteredPeople = people.filter((p) => {
     const fullName = (p.firstName + " " + p.lastName).toLowerCase();
@@ -122,7 +123,8 @@ export default function FamilyTreePage() {
                   (document.getElementById("mediaFile") as HTMLInputElement).files?.[0] || new File([], ""),
                   (document.getElementById("mediaFile") as HTMLInputElement).files?.[0].type || "unknown",
                   "Uploaded test media",
-                  currentUser?.uid || ""
+                  currentUser?.uid || "",
+                  familyView
                 )}}
               >Upload</button>
             </div>
@@ -163,9 +165,15 @@ export default function FamilyTreePage() {
             </button>
 
             <div className="text-center mb-8">
-              <div className="py-30 bg-[#B5B5B5] rounded-2xl mb-10">
-                image
-              </div>
+
+              <span className="relative">
+                <div className="py-30 bg-[#B5B5B5] rounded-2xl mb-10">
+                  image
+                </div>
+                <button className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 rounded-full w-10 h-10 hover:bg-gray-300 cursor-pointer">
+                  <img src="/edit-svgrepo-com.svg" alt="Edit" />
+                </button>
+              </span>
 
               <h2 className="text-m">
                 <strong className="text-xl ">

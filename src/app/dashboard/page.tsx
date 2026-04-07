@@ -10,7 +10,9 @@ import { auth, db } from "@/lib/firebase";
 import { createFamily } from "@/lib/family";
 import Inbox from "@/components/Inbox";
 import FamilyDropdown from "@/components/FamilyDropdown";
+import MediaView from "@/components/MediaView";
 import { useFamily } from "@/lib/FamilyContext";
+import { uploadMedia } from "@/lib/media";
 
 export default function Dashboard() {
 
@@ -24,6 +26,11 @@ export default function Dashboard() {
   const [lastName, setLastName] = useState("");
   const [userID, setUserID] = useState("");
   const [userFamilies, setUserFamilies] = useState<Family[]>([]);
+  const [avatarURL, setAvatarURL] = useState("/avatar-girl-svgrepo-com.svg"); 
+
+  // Media Handling Variables
+  const [showMediaWindow, setShowMediaWindow] = useState(false);
+  const [familyView, setFamilyView] = useState(false); // Indicates for media upload/retrieval that it is the dashboard page
 
   // Family Booleans
   const [familyCreated, setFamilyCreated] = useState(false);
@@ -60,6 +67,7 @@ export default function Dashboard() {
               setFirstName(data.firstName);
               setLastName(data.lastName);
               setUserID(data.uid);
+              setAvatarURL(data.avatarURL || "/avatar-girl-svgrepo-com.svg");
 
               const families = data.families || [];
               setUserFamilies(families);
@@ -145,14 +153,19 @@ export default function Dashboard() {
             Sign Out
         </button>
         <div className="flex flex-col justify-left items-center text-center p-4 lg:flex-row">
-          {/*TODO: Implement avatar retrievel from database*/}
-          <Image
-            src="/avatar-girl-svgrepo-com.svg"
-            alt="avatar image"
-            width={80}
-            height={80}
-            priority
-          />
+          <button 
+            className="hover:brightness-75 transition-all duration-150 rounded-full"
+            onClick ={() => {setShowMediaWindow(true);}}
+          >
+            <Image
+              src={avatarURL}
+              alt="avatar image"
+              width={80}
+              height={80}
+              priority
+              className="rounded-full bg-white p-1"
+            />
+          </button>
           <p className="max-w-md text-lg leading-20 text-black pl-5">
             <strong>{firstName} {lastName}</strong>
           </p>
@@ -170,14 +183,19 @@ export default function Dashboard() {
               <h1 className="max-w-s text-3xl font-semibold leading-10 tracking-tight text-black">
                 Welcome to Shared Roots.
               </h1>
-              <Image
-              src="/avatar-girl-svgrepo-com.svg"
-              alt="avatar image"
-              width={150}
-              height={150}
-              priority
-              className="rounded-full bg-white p-1"
-              />
+              <button 
+                className="hover:brightness-75 transition-all duration-150 rounded-full"
+                onClick ={() => {setShowMediaWindow(true);}}
+              >
+                <Image
+                src={avatarURL}
+                alt="avatar image"
+                width={150}
+                height={150}
+                priority
+                className="rounded-full bg-white p-1"
+                />
+              </button>
             </div>
             <p className="max-w-md text-lg leading-8 text-black">
               Greetings {firstName} {lastName}!
@@ -316,6 +334,17 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+      )}
+
+      {showMediaWindow && (
+        <MediaView
+          uid={userID}
+          familyID={activeFamily ? activeFamily.id : ""}
+          familyView={familyView}
+          onClose={(returnValue: boolean) => {
+            setShowMediaWindow(false);
+          }}
+        />
       )}
 
     </div>
