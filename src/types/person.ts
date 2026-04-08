@@ -1,5 +1,6 @@
 export interface Person {
   id: string;
+  avatar?: string;
 
   firstName: string;
   lastName: string;

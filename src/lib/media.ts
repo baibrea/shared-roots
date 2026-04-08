@@ -1,6 +1,6 @@
-import { doc, addDoc, getDoc, setDoc, updateDoc, collection, arrayUnion, getDocs } from "firebase/firestore";
+import { doc, addDoc, getDoc, setDoc, updateDoc, collection, arrayUnion, getDocs, deleteDoc, onSnapshot } from "firebase/firestore";
 import { db, storage } from "@/lib/firebase";
-import { uploadBytes, ref, getDownloadURL } from "@firebase/storage";
+import { uploadBytes, ref, getDownloadURL, deleteObject } from "@firebase/storage";
 
 // Function to upload media file to family's cloud
 export async function uploadMedia(
@@ -19,6 +19,11 @@ export async function uploadMedia(
     const userSnap = await getDoc(userRef);
     const uploaderName = userSnap.data()?.firstName + " " + userSnap.data()?.lastName;
 
+    // Throws an error if file is [] or media type is unknown
+    if (media.size === 0 || mediaType === "unknown") {
+        throw new Error("No file selected or file type is unsupported");
+    }
+    
     // Uploads to family storage if on the family tree page
     if (familyView) {
         if (!familySnap.exists()) {
@@ -71,27 +76,89 @@ export async function retrieveMedia(
     if (familyView) {
 
         // Retrieves media from family storage
-        const mediaQuerySnapshot = await getDocs(collection(db, "families", familyID, "media"));
-        mediaData = mediaQuerySnapshot.docs.map((doc) => ({
-            url: doc.data().mediaURL,
-            description: doc.data().description,
-            mediaType: doc.data().mediaType,
-            uploader: doc.data().uploader,
-            uploadDate: doc.data().uploadDate
-        }));
+        return new Promise((resolve) => {
+            const unsubscribe = onSnapshot(collection(db, "families", familyID, "media"), (mediaQuerySnapshot) => {
+                mediaData = mediaQuerySnapshot.docs.map((doc) => ({
+                    url: doc.data().mediaURL,
+                    description: doc.data().description,
+                    mediaType: doc.data().mediaType,
+                    uploader: doc.data().uploader,
+                    uploadDate: doc.data().uploadDate
+                }));
+                resolve(mediaData);
+            });
+        });
 
     } else {
 
         // Retrieves media from user storage
-        const mediaQuerySnapshot = await getDocs(collection(db, "users", uid, "media"));
-        mediaData = mediaQuerySnapshot.docs.map((doc) => ({
-            url: doc.data().mediaURL,
-            description: doc.data().description,
-            mediaType: doc.data().mediaType,
-            uploader: doc.data().uploader,
-            uploadDate: doc.data().uploadDate
-        }));
+        return new Promise((resolve) => {
+            const unsubscribe = onSnapshot(collection(db, "users", uid, "media"), (mediaQuerySnapshot) => {
+                mediaData = mediaQuerySnapshot.docs.map((doc) => ({
+                    url: doc.data().mediaURL,
+                    description: doc.data().description,
+                    mediaType: doc.data().mediaType,
+                    uploader: doc.data().uploader,
+                    uploadDate: doc.data().uploadDate
+                }));
+                resolve(mediaData);
+            });
+        });
+    }
+}
+
+export async function deleteMedia(
+    userId: string,
+    familyID: string,
+    mediaId: string,
+    familyView: boolean
+): Promise<void> {
+
+    // Storage location check
+    if (familyView) {
+
+        // Deletes media from family document
+        const docRef = doc(db, "families", familyID, "media", mediaId);
+        await deleteDoc(docRef);
+
+        // Deletes media from family storage
+        const storageRef = ref(storage, `families/${familyID}/media/${mediaId}`);
+        await deleteObject(storageRef);
+
+    } else {
+
+        // Deletes media from user document
+        const docRef = doc(db, "users", userId, "media", mediaId);
+        await deleteDoc(docRef);
+
+        // Deletes media from user storage
+        const storageRef = ref(storage, `users/${userId}/media/${mediaId}`);
+        await deleteObject(storageRef);
+    } 
+}
+
+export async function changeImage(
+    targetId: string,
+    mediaId: string,
+    familyView: boolean,
+    familyID?: string | ""
+): Promise<void> {
+
+    if (familyView) {
+        
+        // Updates avatar in family document
+        const familyRef = doc(db, "families", familyID || "", "people", targetId);
+        await updateDoc(familyRef, {
+            avatar: mediaId
+        });
+
+    } else {
+
+        // Updates avatar in user document
+        const userRef = doc(db, "users", targetId);
+        await updateDoc(userRef, {
+            avatar: mediaId
+        });
 
     }
-    return mediaData;
 }
