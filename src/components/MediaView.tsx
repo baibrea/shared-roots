@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { collection, getDoc, DocumentReference, onSnapshot, orderBy, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { retrieveMedia, uploadMedia } from "@/lib/media";
+import { uploadMedia } from "@/lib/media";
+import useMediaGallery from "@/lib/MediaGallery";
 import Image from "next/image";
 
 export default function MediaView ({
@@ -15,23 +16,12 @@ export default function MediaView ({
     familyView: boolean;
     onClose: (returnValue: boolean) => void;
 }) {
-    const [media, setMedia] = useState<{ url: string; description: string; mediaType: string; uploader: string; uploadDate: number }[]>([]);
+    const media = useMediaGallery(familyID, uid, familyView);
     const [uploadMessage, setUploadMessage] = useState<string>("");
     const [fileName, setFileName] = useState<string>("No file selected");
     const [uploadResult, setUploadResult] = useState<string>("");
     const [resultColor, setResultColor] = useState<string>("text-red-600");
 
-    // Real-time listener for media storage
-    useEffect(() => {
-
-        const fetchMedia = async () => {
-            const mediaData = familyView ? await retrieveMedia(familyID, uid, familyView) : await retrieveMedia(familyID, uid, familyView);
-            setMedia(mediaData);    
-        };
-
-        fetchMedia();
-
-    }, [uid, familyID, familyView]);
 
     const handleMediaUpload = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();

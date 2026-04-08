@@ -65,48 +65,6 @@ export async function uploadMedia(
     }
 }
 
-export async function retrieveMedia(
-    familyID: string,
-    uid: string,
-    familyView: boolean
-): Promise<{ url: string; description: string; mediaType: string; uploader: string; uploadDate: number }[]> {
-    let mediaData: { url: string; description: string; mediaType: string; uploader: string; uploadDate: number }[] = [];
-
-    // Checks what page the function is called in
-    if (familyView) {
-
-        // Retrieves media from family storage
-        return new Promise((resolve) => {
-            const unsubscribe = onSnapshot(collection(db, "families", familyID, "media"), (mediaQuerySnapshot) => {
-                mediaData = mediaQuerySnapshot.docs.map((doc) => ({
-                    url: doc.data().mediaURL,
-                    description: doc.data().description,
-                    mediaType: doc.data().mediaType,
-                    uploader: doc.data().uploader,
-                    uploadDate: doc.data().uploadDate
-                }));
-                resolve(mediaData);
-            });
-        });
-
-    } else {
-
-        // Retrieves media from user storage
-        return new Promise((resolve) => {
-            const unsubscribe = onSnapshot(collection(db, "users", uid, "media"), (mediaQuerySnapshot) => {
-                mediaData = mediaQuerySnapshot.docs.map((doc) => ({
-                    url: doc.data().mediaURL,
-                    description: doc.data().description,
-                    mediaType: doc.data().mediaType,
-                    uploader: doc.data().uploader,
-                    uploadDate: doc.data().uploadDate
-                }));
-                resolve(mediaData);
-            });
-        });
-    }
-}
-
 export async function deleteMedia(
     userId: string,
     familyID: string,
