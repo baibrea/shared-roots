@@ -60,9 +60,16 @@ function PersonNode({ data }: NodeProps) {
           }
         `}
       >
-        <div className="w-1/4 h-1/4 rounded-full bg-gray-50 flex items-center justify-center mb-1">
-          <User className={`w-1/2 h-1/2 ${isActive ? "text-white" : "text-gray-400"}`} />
-        </div>
+        {person.avatar ? (
+          <img 
+                      src={person.avatar}
+                      alt={`${person.firstName} ${person.lastName}`} 
+                      className="w-16 h-16 rounded-full object-cover mx-auto"
+                    />
+        ) : (<User className={`w-1/3 h-1/3 ${isActive ? "text-white" : "text-gray-400"}`} />)
+        }
+          
+        
         <span className={`font-bold leading-tight text-xs ${isActive ? "text-white" : "text-[#3A433A]"}`}>
           {person.firstName}<br />{person.lastName}
         </span>
@@ -380,6 +387,7 @@ function buildGraph(
 function Inner({ nodes: inNodes, edges: inEdges, onNodeClick, focusNodeId, focusZoom, onRequestFit }: { 
   nodes: Node[]; 
   edges: Edge[]; 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onNodeClick: (event: any, node: Node) => void;
   focusNodeId?: string | null;
   focusZoom?: number;
@@ -404,7 +412,9 @@ function Inner({ nodes: inNodes, edges: inEdges, onNodeClick, focusNodeId, focus
       if (focusNodeId) {
         const node = inNodes.find(n => n.id === focusNodeId);
         if (node) {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const centerX = (node.position as any).x + NODE_W / 2;
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const centerY = (node.position as any).y + NODE_H / 2;
           const zoom = typeof focusZoom === "number" ? focusZoom : 1.3;
 
@@ -542,6 +552,7 @@ export default function VisualGraph({
     setDisplayEdges(graph.edges);
   }, [graph]);
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleNodeClick = useCallback((event: any, node: Node) => {
     // Remember the clicked node so Inner can center+zoom on it after layout.
     setFocusNodeId(node.id);
