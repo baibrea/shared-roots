@@ -68,9 +68,9 @@ export function PeopleProvider({ children }: { children: React.ReactNode }) {
 
       } else if (relationship === "parent" && referencePerson) {
         person.children = [referencePerson.id];
-        // If the reference already has a parent, the new parent becomes their spouse
+        // If the reference already has parent(s), they become spouses of the new parent
         if (referencePerson.parents?.length) {
-          person.spouses = [referencePerson.parents[0]];
+          person.spouses = referencePerson.parents;
         }
 
       } else if (relationship === "spouse" && referencePerson) {

@@ -14,17 +14,17 @@ export default function UpdatePersonForm({
     const { updatePerson } = usePeople();
 
     const [formData, setFormData] = useState<Partial<Person>>({
-        firstName: person.firstName,
-        lastName: person.lastName,
-        birthDate: person.birthDate,
-        birthLocation: person.birthLocation,
-        title: person.title,
-        bio: person.bio,
-        healthDetails: person.healthDetails,
-        parents: person.parents,
-        children: person.children,
-        spouses: person.spouses,
-        avatar: person.avatar
+        firstName: person.firstName || '',
+        lastName: person.lastName || '',
+        birthDate: person.birthDate || '',
+        birthLocation: person.birthLocation || '',
+        title: person.title || '',
+        bio: person.bio || '',
+        healthDetails: person.healthDetails || '',
+        parents: person.parents || [],
+        children: person.children || [],
+        spouses: person.spouses || [],
+        avatar: person.avatar || ''
     });
 
     const isFormValid = formData.firstName?.trim() && formData.lastName?.trim();

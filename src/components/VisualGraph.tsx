@@ -22,7 +22,7 @@ import "reactflow/dist/style.css";
 const NODE_W     = 130;   // person card width  (px)
 const NODE_H     = 130;   // person card height (px)
 const SPOUSE_GAP = 60;    // gap between two spouses in a pair
-const UNIT_GAP   = 50;    // gap between independent units in a row
+const UNIT_GAP   = 60;    // gap between independent units in a row
 const ROW_GAP    = 160;   // vertical gap between generations
 
 const hiddenHandle: React.CSSProperties = {
@@ -289,7 +289,7 @@ function buildGraph(
       type:         "straight",
       style: {
         stroke: "white", strokeWidth: 2,
-        strokeOpacity: 0.4, strokeDasharray: "6,4",
+        strokeOpacity: 0.7, strokeDasharray: "6,4",
       },
     });
   }
@@ -311,72 +311,58 @@ function buildGraph(
         type:  "straight",
         style: {
           stroke: "white", strokeWidth: 2,
-          strokeOpacity: 0.4, strokeDasharray: "6,4",
+          strokeOpacity: 0.7, strokeDasharray: "6,4",
         },
       });
     }
   }
 
   // ── Pass 3: parent-child edges ───────────────────────────────────────────────
-  const drawn = new Set<string>();
+  // Collect all visible children and their visible parents, then draw one edge per child
+  const childToVisibleParents: Record<string, string[]> = {};
+  for (const [childId] of Object.entries(posMap)) {
+    const child = people.find(p => p.id === childId);
+    const visibleParents = (child?.parents ?? []).filter(pid => posMap[pid]);
+    if (visibleParents.length > 0) {
+      childToVisibleParents[childId] = visibleParents;
+    }
+  }
 
-  for (const parentId of Object.keys(posMap)) {
-    const parent = people.find(p => p.id === parentId);
-    if (!parent) continue;
+  const drawnChildEdges = new Set<string>();
 
-    for (const childId of parent.children ?? []) {
-      if (!posMap[childId]) continue;
+  for (const [childId, parentIds] of Object.entries(childToVisibleParents)) {
+    if (drawnChildEdges.has(childId)) continue;
+    drawnChildEdges.add(childId);
 
-      const child      = people.find(p => p.id === childId);
+    // Find the best source for this child's edge.
+    // Prefer: couple nodes (exactly 2 parents who are married) > single visible parent.
+    let bestSource: string | null = null;
 
-      // Is there a co-parent who is also one of this parent's spouses AND is visible?
-      const coParentId = (parent.spouses ?? []).find(
-        sid => posMap[sid] && (child?.parents ?? []).includes(sid)
-      );
-
-      if (coParentId) {
-        const coupleKey = [parentId, coParentId].sort().join("--");
-        const couple    = couplesByKey[coupleKey];
-
-        if (couple) {
-          // Both parents are grouped as a couple → route from their shared couple node
-          const id = `pc-${couple.coupleId}→${childId}`;
-          if (drawn.has(id)) continue;
-          drawn.add(id);
-          edges.push({
-            id,
-            source: couple.coupleId, sourceHandle: "bottom",
-            target: childId,         targetHandle: "top",
-            type:  "smoothstep",
-            style: { stroke: "white", strokeWidth: 2, strokeOpacity: 0.5 },
-          });
-        } else {
-          // Co-parent is visible but they're not grouped (e.g. second marriage)
-          // Fall through to single-parent edge below
-          const id = `pc-${parentId}→${childId}`;
-          if (drawn.has(id)) continue;
-          drawn.add(id);
-          edges.push({
-            id,
-            source: parentId, sourceHandle: "bottom",
-            target: childId,  targetHandle: "top",
-            type:  "smoothstep",
-            style: { stroke: "white", strokeWidth: 2, strokeOpacity: 0.5 },
-          });
-        }
-      } else {
-        // No co-parent in view → single-parent line
-        const id = `pc-${parentId}→${childId}`;
-        if (drawn.has(id)) continue;
-        drawn.add(id);
-        edges.push({
-          id,
-          source: parentId, sourceHandle: "bottom",
-          target: childId,  targetHandle: "top",
-          type:  "smoothstep",
-          style: { stroke: "white", strokeWidth: 2, strokeOpacity: 0.5 },
-        });
+    // Check if there's exactly 2 visible parents and they're married to each other
+    if (parentIds.length === 2) {
+      const coupleKey = parentIds.sort().join("--");
+      const couple = couplesByKey[coupleKey];
+      if (couple) {
+        bestSource = couple.coupleId;
       }
+    }
+
+    // If no couple node found, use the first visible parent
+    if (!bestSource && parentIds.length > 0) {
+      bestSource = parentIds[0];
+    }
+
+    if (bestSource) {
+      const id = `pc-${bestSource}→${childId}`;
+      edges.push({
+        id,
+        source: bestSource,
+        sourceHandle: "bottom",
+        target: childId,
+        targetHandle: "top",
+        type: "smoothstep",
+        style: { stroke: "white", strokeWidth: 2, strokeOpacity: 0.7 },
+      });
     }
   }
 
@@ -475,7 +461,6 @@ function Inner({ nodes: inNodes, edges: inEdges, onNodeClick, focusNodeId, focus
         maxZoom={2}
         proOptions={{ hideAttribution: true }}
       >
-        <Background color="#3a4232" gap={20} size={1} />
         <Controls showInteractive={false} />
       </ReactFlow>
 
