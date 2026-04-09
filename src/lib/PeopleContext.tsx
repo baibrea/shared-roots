@@ -93,15 +93,15 @@ export function PeopleProvider({ children }: { children: React.ReactNode }) {
           // Add child to every existing spouse too
           for (const spouseId of referencePerson.spouses ?? []) {
             const spouseRef = doc(db, "families", activeFamily.id, "people", spouseId);
-            await updateDoc(referenceRef, { children: arrayUnion(newId) });
+            await updateDoc(spouseRef, { children: arrayUnion(newId) });
           }
           // If the reference person has a spouse, also update the spouse to add this new child
         } else if (relationship === "parent") {
           await updateDoc(referenceRef, { parents: arrayUnion(newId) });
           // If the reference already had a parent, link the two parents as spouses
-          if(referencePerson.parents && referencePerson.parents.length > 0) {
-            const existingParentRef = doc(db, "families", activeFamily.id, "people", referencePerson.parents[0]);
-            await updateDoc(existingParentRef, { spouse: newId });
+          for(const parentId of referencePerson.parents ?? []) {
+            const parentRef = doc(db, "families", activeFamily.id, "people", parentId);
+            await updateDoc(parentRef, { spouses: arrayUnion(newId) });
           }
 
         } else if (relationship === "spouse") {
