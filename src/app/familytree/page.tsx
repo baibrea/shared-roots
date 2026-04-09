@@ -1,12 +1,17 @@
 "use client";
 
-import { useState } from "react";
+import { act, use, useEffect, useState } from "react";
 import AddPersonForm from "@/lib/AddPersonForm";
 import { usePeople } from "@/lib/PeopleContext";
 import { Person } from "@/types/person";
 import VisualGraph from "@/components/VisualGraph";
 import SearchBar from "@/components/SearchBar";
 import UpdatePersonForm from "@/lib/UpdatePersonForm";
+import { useFamily } from "@/lib/FamilyContext";
+import { auth, db } from "@/lib/firebase";
+import { uploadMedia } from "@/lib/media";
+import { doc, getDoc } from "@firebase/firestore";
+import MediaView from "@/components/MediaView";
 
 export default function FamilyTreePage() {
   const { people } = usePeople();
@@ -18,6 +23,10 @@ export default function FamilyTreePage() {
 
   const selectedPerson = people.find(p => p.id === selectedPersonId) || null;
   const activePerson = selectedPerson || people[0] || null;
+  const { activeFamily } = useFamily();
+  const currentUser = auth.currentUser;
+  const familyView = true; // Indicates for media upload/retrieval that it is the family tree page
+  const [showMediaWindow, setShowMediaWindow] = useState(false);
 
   const filteredPeople = people.filter((p) => {
     const fullName = (p.firstName + " " + p.lastName).toLowerCase();
@@ -107,6 +116,20 @@ export default function FamilyTreePage() {
         {!selectedPerson && (
           <div className="flex flex-col h-full">
             <h2 className="text-xl font-bold mb-4">Directory</h2>
+            <div className="flex flex-row">
+              <input type="file" id="mediaFile"></input>
+              <button 
+                className="ml-4 px-4 py-2 mb-4 bg-[#2c3224] text-white rounded-full hover:bg-[#3E4B2C] cursor-pointer"
+                onClick={() => {uploadMedia(
+                  activeFamily?.id || "",
+                  (document.getElementById("mediaFile") as HTMLInputElement).files?.[0] || new File([], ""),
+                  (document.getElementById("mediaFile") as HTMLInputElement).files?.[0].type || "unknown",
+                  "Uploaded test media",
+                  currentUser?.uid || "",
+                  familyView
+                )}}
+              >Upload</button>
+            </div>
             
             {/* New Component Integrated Here */}
             <SearchBar 
@@ -144,9 +167,26 @@ export default function FamilyTreePage() {
             </button>
 
             <div className="text-center mb-8">
-              <div className="py-30 bg-[#B5B5B5] rounded-2xl mb-10">
-                image
-              </div>
+
+              <span className="relative">
+                <div className="py-30 bg-[#B5B5B5] rounded-2xl mb-10">
+                  {selectedPerson.avatar ? (
+                    <img 
+                      src={selectedPerson.avatar}
+                      alt={`${selectedPerson.firstName} ${selectedPerson.lastName}`} 
+                      className="w-32 h-32 rounded-full object-cover mx-auto"
+                    />
+                  ) : (
+                    <div className="w-32 h-32 rounded-full bg-gray-300 mx-auto">image</div>
+                  )}
+                </div>
+                <button 
+                  className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 rounded-full w-10 h-10 hover:bg-gray-300 cursor-pointer"
+                  onClick={() => setShowMediaWindow(true)}
+                >
+                  <img src="/edit-svgrepo-com.svg" alt="Edit" />
+                </button>
+              </span>
 
               <h2 className="text-m">
                 <strong className="text-xl ">
@@ -213,6 +253,15 @@ export default function FamilyTreePage() {
               <UpdatePersonForm
                 person={editingPerson}
                 onClose={() => setEditingPerson(null)}
+              />
+            )}
+
+            {showMediaWindow && (
+              <MediaView 
+                uid={selectedPerson.id || ""}
+                familyID={activeFamily?.id || ""}
+                familyView={true}
+                onClose={() => setShowMediaWindow(false)}
               />
             )}
 

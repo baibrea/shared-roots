@@ -13,7 +13,8 @@ export default function Inbox({
     firstName,
     lastName,
     onClose,
-    onFamiliesUpdate
+    onFamiliesUpdate,
+    viewType = "pending"
 }: {
     docRef: DocumentReference;
     uid: string;
@@ -22,8 +23,9 @@ export default function Inbox({
     lastName: string;
     onClose: (returnValue: boolean) => void;
     onFamiliesUpdate: (families: { id: string; name: string }[]) => void;
+    viewType: "pending" | "archived" | "invite";
 }) {
-    const [inboxView, setInboxView] = useState<"pending" | "archived" | "invite">("pending");
+    const [inboxView, setInboxView] = useState<"pending" | "archived" | "invite">(viewType);
     const [inviteMessage, setInviteMessage] = useState("");
     const [familyName, setFamilyName] = useState("");
     const [email, setEmail] = useState("");
@@ -33,6 +35,11 @@ export default function Inbox({
     const [success, setSuccess] = useState(false);
     const [error, setError] = useState(false);
     const [acceptedInvite, setAcceptedInvite] = useState(false);
+
+    // Listener for setting the view type
+    useEffect(() => {
+        setInboxView(viewType);
+    }, [viewType]);
 
     // Real-time listener for pending invites
     useEffect(() => {

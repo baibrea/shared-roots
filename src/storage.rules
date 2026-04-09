@@ -6,6 +6,11 @@ service firebase.storage {
     match /users/{userId}/{allPaths=**} {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
+
+    // Allows upload media to family cloud - Will update later
+    match /families/{familyId}/{allPaths=**} {
+      allow read, write: if request.auth != null
+    }
     
     // Add more specific rules as needed
     // For example, public uploads folder:
