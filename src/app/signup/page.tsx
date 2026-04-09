@@ -134,7 +134,7 @@ export default function CreateAccountPage() {
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 required
-                                className="w-full border border-[#6E6E6E] rounded-3xl px-3 py-2 focus:outline-none focus:ring-2 focus:bg-[#c6d2c6] bg-[#dde4dd]
+                                className="w-full border border-[#6E6E6E] rounded-2xl px-3 py-2 focus:ring-2 focus:bg-[#c6d2c6] bg-[#dde4dd]
                                 placeholder: text-black"
                                 placeholder="Email"
                             />
@@ -149,7 +149,7 @@ export default function CreateAccountPage() {
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
                                 required
-                                className="w-full border border-[#6E6E6E] rounded-3xl px-3 py-2 focus:outline-none focus:ring-2 focus:bg-[#c6d2c6] bg-[#dde4dd]
+                                className="w-full border border-[#6E6E6E] rounded-2xl px-3 py-2 focus:ring-2 focus:bg-[#c6d2c6] bg-[#dde4dd]
                                 placeholder: text-black"
                                 placeholder="Password"
                             />
@@ -179,7 +179,7 @@ export default function CreateAccountPage() {
                                     value={firstName}
                                     onChange={(e) => setFirstName(e.target.value)}
                                     required
-                                    className="w-full border border-[#6E6E6E] rounded-3xl px-3 py-2 focus:outline-none focus:ring-2 focus:bg-[#c6d2c6] bg-[#dde4dd]
+                                    className="w-full border border-[#6E6E6E] rounded-2xl px-3 py-2 focus:ring-2 focus:bg-[#c6d2c6] bg-[#dde4dd]
                                     placeholder: text-black"
                                     placeholder="First Name"
                                 />
@@ -189,7 +189,7 @@ export default function CreateAccountPage() {
                                     value={lastName}
                                     onChange={(e) => setLastName(e.target.value)}
                                     required
-                                    className="w-full border border-[#6E6E6E] rounded-3xl px-3 py-2 focus:outline-none focus:ring-2 focus:bg-[#c6d2c6] bg-[#dde4dd]
+                                    className="w-full border border-[#6E6E6E] rounded-2xl px-3 py-2 focus:ring-2 focus:bg-[#c6d2c6] bg-[#dde4dd]
                                     placeholder: text-black"
                                     placeholder="Last Name"
                                 />
@@ -197,7 +197,7 @@ export default function CreateAccountPage() {
                         </div>
                         <button
                             type="submit"
-                            className="w-full bg-[#7b8b69] text-white py-2 my-1 rounded-3xl hover:opacity-90 transition disabled:opacity-50 cursor-pointer"
+                            className="w-full bg-[#7b8b69] text-white py-2 my-1 rounded-2xl hover:opacity-90 transition disabled:opacity-50 cursor-pointer"
                         >
                                 Create Account
                         </button>

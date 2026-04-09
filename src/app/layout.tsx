@@ -29,8 +29,6 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
         <FamilyProvider>
           <PeopleProvider>
             <AuthRedirect />
-            {/* Navbar */}
-            <Header />
 
             {/* Page Content */}
             <main className="flex-1">{children}</main>

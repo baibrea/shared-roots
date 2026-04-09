@@ -14,6 +14,7 @@ import MediaView from "@/components/MediaView";
 import useInvites from "@/lib/inbox";
 import { useAvatar } from "@/lib/media";
 import { useFamily } from "@/lib/FamilyContext";
+import Sidebar from "@/components/Sidebar";
 
 export default function Dashboard() {
 
@@ -22,11 +23,16 @@ export default function Dashboard() {
     name: string;
   };
 
+  type FamilyMember = {
+    name: string;
+  }
+
   // Declares User Information Variables
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [userID, setUserID] = useState("");
   const [userFamilies, setUserFamilies] = useState<Family[]>([]);
+  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
   const [avatarURL, setAvatarURL] = useState("/avatar-girl-svgrepo-com.svg");
   const currentAvatar = useAvatar(userID);
   //const inbox = useInvites(userID);
@@ -74,10 +80,6 @@ export default function Dashboard() {
               const families = data.families || [];
               setUserFamilies(families);
 
-              if (!activeFamily &&families.length > 0) {
-                setActiveFamily(families[0]);
-              }
-
               // Check for pending invites
               const inboxAlert = onSnapshot(
                 query(collection(db, "users", user.uid, "inbox"), where("status", "==", "pending")),
@@ -96,95 +98,57 @@ export default function Dashboard() {
 
     return () => unsubscribe();
 
+  }, []);
+
+  useEffect(() => {
+    if (!activeFamily?.id) {
+      return;
+    }
+
+    const membersRef = collection(db, "families", activeFamily.id, "members");
+
+    const unsubscribeMembers = onSnapshot(membersRef, (snapshot) => {
+      const membersData = snapshot.docs.map((docSnap) => ({
+        ...docSnap.data()
+      })) as FamilyMember[];
+
+      setFamilyMembers(membersData);  
+    });
+
+    return () => {
+      setFamilyMembers([]);
+      unsubscribeMembers();
+    };
   }, [activeFamily]);
 
   return (
-    <div className="flex min-h-screen bg-zinc-50 font-sans dark:bg-[#FFFFFF]">
+    <div className="flex min-h-screen font-sans">
       <meta name="viewport" content="width=device-width, initial-scale=1"/>
-      <aside className="flex flex-col min-h-screen items-center w-1/6 bg-[#657B97] py-10">
-        <div className="flex flex-col w-full items-center gap-4">
-          {/*TODO: Add Shared Roots Logo*/}
-          <Image
-            className="dark:invert pb-10"
-            src="/next.svg"
-            alt="Next.js logo"
-            width={100}
-            height={20}
-            priority
-          />
-          <Link href="/dashboard" className="flex h-12 w-full items-center justify-center gap-2 px-5 text-white transition-colors dark:hover:bg-[#1a1a1a]">
-            Dashboard
-          </Link>
-          <Link href="/familytree" className="flex h-12 w-full items-center justify-center gap-2 px-5 text-white transition-colors dark:hover:bg-[#1a1a1a]">
-            Family Tree
-          </Link>
-          <Link href="/dashboard" className="flex h-12 w-full items-center justify-center gap-2 px-5 text-white transition-colors dark:hover:bg-[#1a1a1a]">
-            Timeline
-          </Link>
-        </div>
 
-        {/*TODO: Add Dropdown View Profile*/}
-        <button className="mt-auto bg-[#657B97] text-white py-2 px-9 rounded-3xl transition-colors dark:hover:bg-[#556880] disabled:opacity-50 w-[110px] h-[50px]"
-          onClick={async () => {
-            try {
-              openInbox("pending");
-            } catch (error) {
-              console.log("Inbox error", error);
-              setShowInbox(false);
-            }
-          }}>
-          <span className="relative inline-block">
-            <Image
-              className="dark:invert"
-              src="/mail-svgrepo-com.svg"
-              alt="Inbox"
-              width={50}
-              height={50}
-              priority
-            />
-            {hasPending && (
-              <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 bg-red-600 rounded-full h-5 w-5"/>
-            )}
-          </span>
-        </button>
-        <button
-            type="submit"
-            className="w-[160px] bg-[#657B97] text-white py-2 rounded-3xl transition-colors dark:hover:bg-[#556880]"
-            onClick={() => logOut(router)}
-            >
-            Sign Out
-        </button>
-        <div className="flex flex-col justify-left items-center text-center p-4 lg:flex-row">
-          <button 
-            className="hover:brightness-75 transition-all duration-150 rounded-full"
-            onClick ={() => {setShowMediaWindow(true);}}
-          >
-            <Image
-              src={currentAvatar || avatarURL}
-              alt="avatar image"
-              width={80}
-              height={80}
-              priority
-              className="rounded-full bg-white p-1"
-            />
-          </button>
-          <p className="max-w-md text-lg leading-20 text-black pl-5">
-            <strong>{firstName} {lastName}</strong>
-          </p>
-          
-        </div>
-      </aside>
+      {/* Left Header */}
+      <Sidebar
+        firstName={firstName}
+        lastName={lastName}
+        hasPending={hasPending}
+        openInbox={openInbox}
+        showInbox={true}
+      />
       
-      <main className="flex min-h-screen w-full flex-row gap-10 py-20 px-16 bg-[#DDE7F4] sm:items-start">
-        {/* Left side of the main area */}
-        <div className="flex flex-col w-1/2 gap-6 bg-amber-50">
-          <div className="flex flex-col w-full h-1/3 items-center bg-[#657B97] p-8 rounded-4xl justify-center gap-6 text-center sm:items-start sm:text-left">
+      <main className="flex min-h-screen w-full flex-row gap-10 py-12 px-6 sm:px-10 lg:px-20 xl:px-36 bg-[#b9c4b9] sm:items-start">
+        <div className="flex flex-col w-full h-full gap-10">
+          {/* Top of the main area */}
+          <div className="flex flex-col w-full h-1/3 items-center bg-[#2c3224] p-8 rounded-2xl justify-center gap-6 text-center sm:items-start sm:text-left shadow-lg">
 
             {/*Greeting card*/}
-            <div className="flex flex-col w-full justify-between items-center gap-4 lg:flex-row">
-              <h1 className="max-w-s text-3xl font-semibold leading-10 tracking-tight text-black">
-                Welcome to Shared Roots.
-              </h1>
+            <div className="flex flex-row w-full justify-between items-center lg:flex-row">
+              <div className="ml-10">
+                <h1 className="max-w-s text-3xl font-semibold leading-10 tracking-tight text-white">
+                  Welcome to Shared Roots.
+                </h1>
+                <p className="max-w-md text-lg mt-4 text-[#bfcab2]">
+                  Greetings {firstName} {lastName}!
+                </p>
+              </div>
               <button 
                 className="hover:brightness-75 transition-all duration-150 rounded-full"
                 onClick ={() => {setShowMediaWindow(true);}}
@@ -195,64 +159,111 @@ export default function Dashboard() {
                 width={150}
                 height={150}
                 priority
-                className="rounded-full bg-white p-1"
+                className="rounded-full bg-white p-1 mr-10"
                 />
               </button>
             </div>
-            <p className="max-w-md text-lg leading-8 text-black">
-              Greetings {firstName} {lastName}!
-            </p>
           </div>
 
-          {/* Timeline */}
-          <div className="bg-[#657B97] rounded-4xl p-8 text-center text-black">
-            <p>Timeline stuff</p>
+          {/* Bottom of main area */}
+          <div className="flex flex-row w-full h-2/3 gap-10">
+            {/* Timeline */}
+            <div className="bg-white w-1/2 min-w-0 rounded-2xl p-8 text-center text-black shadow-lg">
+              <p>Timeline stuff</p>
+            </div>
+
+            {/* Family Tree */}
+            <div className="flex flex-col w-1/2 min-w-0 h-full rounded-2xl gap-4 p-4 text-base bg-white shadow-lg">
+              <div className="flex flex-row items-center justify-between w-full gap-4 flex-wrap">
+                
+                {userFamilies.length > 0 ? (
+                  <FamilyDropdown 
+                    families={userFamilies}
+                    onCreateFamily={() => {
+                      setShowCreateFamily(true);
+                    }}
+                    showCreate={true}
+                  />
+                ) : (
+                  <button
+                    className="w-1/3 min-w-40 max-w-60 py-3 px-5 text-left bg-white hover:bg-gray-100 rounded-md font-semibold text-black"
+                    onClick={() => setShowCreateFamily(true)}
+                  >
+                    + Create Family
+                  </button>
+                )}
+
+                <button className="bg-[#7b8b69] hover:bg-[#5e6e4b] text-white py-2 px-9 rounded-md transition-colors disabled:opacity-50 w-[110px] h-[50px] shadow-md"
+                  onClick={async () => {
+                    try {
+                      openInbox("invite");
+                    } catch (error) {
+                      console.log("Inbox error", error);
+                      setShowInbox(false);
+                    }
+                  }}>
+                  <span className="relative inline-block">
+                    <p>
+                      Invite
+                    </p>
+                  </span>
+                </button>
+              </div>
+
+              <div className="flex flex-col w-full h-full px-4 items-center text-center text-black bg-blue">
+                <ul className="gap-6 w-full flex flex-col items-center">      
+                  {familyMembers.length === 0 ? (
+                    <li className="w-full">
+                      Create a family to get started!
+                    </li>
+                  ) : (    
+                    <>
+                      <h3 className="w-full text-left pt-2 font-bold text-xl"> Users </h3>
+                      <div className="grid grid-cols-[2fr_1fr_100px] w-full text-left border-b-2 border-gray-300 pb-4 justify-items-start">
+                        <p className="truncate">Username</p>
+                        <p className="truncate text-left">Role</p>
+                        <p className="truncate">Modify</p>
+                      </div>
+
+                      {familyMembers.map((member) => (
+                        <li key={member.name}
+                        className="w-full rounded-md transition-colors"
+                        >
+                          <div className="grid grid-cols-[2fr_1fr_100px] w-full items-center">
+                            <p className="text-left text-black truncate">
+                              {member.name}
+                            </p>
+
+                            <p className="text-left truncate">
+                              Admin
+                            </p>
+
+                            <div className="text-left whtiespace-nowrap">
+                              <button>
+                                EditRemove
+                              </button>
+                            </div>
+                          </div>
+                          
+                        </li>
+
+                      ))}
+                      <Link href="/familytree" className="flex w-1/2 bg-[#2c3224] hover:bg-[#1a1a1a] text-white items-center justify-center gap-2 rounded-md px-5 py-4 transition-colors shadow-lg">
+                        View Family Tree
+                      </Link>
+                    </>
+                  )}
+                </ul>
+
+              </div>
+
+            </div>
           </div>
         </div>
 
         {/* Right side of the main area */}
         {/* Family Tree */}
-        <div className="flex flex-col w-1/2 h-full rounded-4xl gap-4 p-4 text-base bg-red-200">
-          <div className="flex flex-row items-center justify-between w-full gap-4">
-            
-            {userFamilies.length > 0 ? (
-              <FamilyDropdown 
-                families={userFamilies}
-                onCreateFamily={() => {
-                  setShowCreateFamily(true);
-                }}
-              />
-            ) : (
-              <button
-                className="w-1/3 min-w-40 max-w-60 py-3 px-5 text-left bg-white hover:bg-gray-100 rounded-md font-semibold text-black"
-                onClick={() => setShowCreateFamily(true)}
-              >
-                + Create Family
-              </button>
-            )}
-
-            <button className="bg-[#657B97] text-white py-2 px-9 rounded-md transition-colors dark:hover:bg-[#556880] disabled:opacity-50 w-[110px] h-[50px]"
-              onClick={async () => {
-                try {
-                  openInbox("invite");
-                } catch (error) {
-                  console.log("Inbox error", error);
-                  setShowInbox(false);
-                }
-              }}>
-              <span className="relative inline-block">
-                <p>
-                  Invite
-                </p>
-              </span>
-          </button>
-        </div>
-
-        <Link href="/familytree" className="flex h-12 w-full items-center justify-center gap-2 rounded-md bg-white px-5 text-black transition-colors dark:hover:bg-[#556880]">
-          Go to Family Tree
-        </Link>
-
-        </div>
+        
       </main>
 
       {showInbox && (
@@ -294,14 +305,14 @@ export default function Dashboard() {
 
             <div className="flex justify-end gap-2">
               <button
-                className="px-4 py-2 bg-gray-400 rounded-md"
+                className="px-4 py-2 bg-gray-300 rounded-md text-black"
                 onClick={() => setShowCreateFamily(false)}
               >
                 Cancel
               </button>
 
               <button
-                className="px-4 py-2 bg-[#657B97] text-white rounded-md"
+                className="px-4 py-2 bg-[#2c3224] text-white rounded-md"
                 onClick={async () => {
                   if (!newFamilyName) return;
 
