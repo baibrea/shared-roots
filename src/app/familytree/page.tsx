@@ -12,6 +12,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
 import { doc, getDoc } from "@firebase/firestore";
 import FamilyDropdown from "@/components/FamilyDropdown";
+import Sidebar from "@/components/Sidebar";
 
 export default function FamilyTreePage() {
   type Family = {
@@ -31,6 +32,9 @@ export default function FamilyTreePage() {
   const { activeFamily } = useFamily();
   const [userFamilies, setUserFamilies] = useState<Family[]>([]);
 
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       
@@ -40,6 +44,9 @@ export default function FamilyTreePage() {
         const data = docSnap.data();
 
         if (data) {
+          setFirstName(data.firstName || "");
+          setLastName(data.lastName || "");
+
           const families = data.families || [];
           setUserFamilies(families);
         }
@@ -98,6 +105,12 @@ export default function FamilyTreePage() {
 
   return (
     <div className="flex h-screen overflow-hidden">
+      <Sidebar
+        firstName={firstName}
+        lastName={lastName}
+      />
+
+
       {/* Family Tree */}
       <div className="w-3/4 p-10 overflow-y-auto bg-[#2c3224] border-r border-gray-200 flex flex-col">
         {userFamilies.length > 0 ? (

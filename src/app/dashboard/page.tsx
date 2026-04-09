@@ -11,6 +11,7 @@ import { createFamily } from "@/lib/family";
 import Inbox from "@/components/Inbox";
 import FamilyDropdown from "@/components/FamilyDropdown";
 import { useFamily } from "@/lib/FamilyContext";
+import Sidebar from "@/components/Sidebar";
 
 export default function Dashboard() {
 
@@ -98,7 +99,6 @@ export default function Dashboard() {
 
     const unsubscribeMembers = onSnapshot(membersRef, (snapshot) => {
       const membersData = snapshot.docs.map((docSnap) => ({
-        id: docSnap.id,
         ...docSnap.data()
       })) as FamilyMember[];
 
@@ -114,74 +114,15 @@ export default function Dashboard() {
   return (
     <div className="flex min-h-screen bg-zinc-50 font-sans dark:bg-[#FFFFFF]">
       <meta name="viewport" content="width=device-width, initial-scale=1"/>
-      <aside className="flex flex-col min-h-screen items-center w-1/6 bg-[#657B97] py-10">
-        <div className="flex flex-col w-full items-center gap-4">
-          {/*TODO: Add Shared Roots Logo*/}
-          <Image
-            className="dark:invert pb-10"
-            src="/next.svg"
-            alt="Next.js logo"
-            width={100}
-            height={20}
-            priority
-          />
-          <Link href="/dashboard" className="flex h-12 w-full items-center justify-center gap-2 px-5 text-white transition-colors dark:hover:bg-[#1a1a1a]">
-            Dashboard
-          </Link>
-          <Link href="/familytree" className="flex h-12 w-full items-center justify-center gap-2 px-5 text-white transition-colors dark:hover:bg-[#1a1a1a]">
-            Family Tree
-          </Link>
-          <Link href="/dashboard" className="flex h-12 w-full items-center justify-center gap-2 px-5 text-white transition-colors dark:hover:bg-[#1a1a1a]">
-            Timeline
-          </Link>
-        </div>
 
-        {/*TODO: Add Dropdown View Profile*/}
-        <button className="mt-auto bg-[#657B97] text-white py-2 px-9 rounded-3xl transition-colors dark:hover:bg-[#556880] disabled:opacity-50 w-[110px] h-[50px]"
-          onClick={async () => {
-            try {
-              openInbox("pending");
-            } catch (error) {
-              console.log("Inbox error", error);
-              setShowInbox(false);
-            }
-          }}>
-          <span className="relative inline-block">
-            <Image
-              className="dark:invert"
-              src="/mail-svgrepo-com.svg"
-              alt="Inbox"
-              width={50}
-              height={50}
-              priority
-            />
-            {hasPending && (
-              <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 bg-red-600 rounded-full h-5 w-5"/>
-            )}
-          </span>
-        </button>
-        <button
-            type="submit"
-            className="w-[160px] bg-[#657B97] text-white py-2 rounded-3xl transition-colors dark:hover:bg-[#556880]"
-            onClick={() => logOut(router)}
-            >
-            Sign Out
-        </button>
-        <div className="flex flex-col justify-left items-center text-center p-4 lg:flex-row">
-          {/*TODO: Implement avatar retrievel from database*/}
-          <Image
-            src="/avatar-girl-svgrepo-com.svg"
-            alt="avatar image"
-            width={80}
-            height={80}
-            priority
-          />
-          <p className="max-w-md text-lg leading-20 text-black pl-5">
-            <strong>{firstName} {lastName}</strong>
-          </p>
-          
-        </div>
-      </aside>
+      {/* Left Header */}
+      <Sidebar
+        firstName={firstName}
+        lastName={lastName}
+        hasPending={hasPending}
+        openInbox={openInbox}
+        showInbox={true}
+      />
       
       <main className="flex min-h-screen w-full flex-row gap-10 py-20 px-16 bg-[#DDE7F4] sm:items-start">
         {/* Left side of the main area */}
