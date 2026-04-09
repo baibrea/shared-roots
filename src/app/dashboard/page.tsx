@@ -10,6 +10,9 @@ import { auth, db } from "@/lib/firebase";
 import { createFamily } from "@/lib/family";
 import Inbox from "@/components/Inbox";
 import FamilyDropdown from "@/components/FamilyDropdown";
+import MediaView from "@/components/MediaView";
+import useInvites from "@/lib/inbox";
+import { useAvatar } from "@/lib/media";
 import { useFamily } from "@/lib/FamilyContext";
 import Sidebar from "@/components/Sidebar";
 
@@ -30,6 +33,13 @@ export default function Dashboard() {
   const [userID, setUserID] = useState("");
   const [userFamilies, setUserFamilies] = useState<Family[]>([]);
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
+  const [avatarURL, setAvatarURL] = useState("/avatar-girl-svgrepo-com.svg");
+  const currentAvatar = useAvatar(userID);
+  //const inbox = useInvites(userID);
+
+  // Media Handling Variables
+  const [showMediaWindow, setShowMediaWindow] = useState(false);
+  const [familyView, setFamilyView] = useState(false); // Indicates for media upload/retrieval that it is the dashboard page
 
   // Family Booleans
   const [familyCreated, setFamilyCreated] = useState(false);
@@ -139,14 +149,19 @@ export default function Dashboard() {
                   Greetings {firstName} {lastName}!
                 </p>
               </div>
-              <Image
-              src="/avatar-girl-svgrepo-com.svg"
-              alt="avatar image"
-              width={150}
-              height={150}
-              priority
-              className="rounded-full bg-white p-1 mr-10"
-              />
+              <button 
+                className="hover:brightness-75 transition-all duration-150 rounded-full"
+                onClick ={() => {setShowMediaWindow(true);}}
+              >
+                <Image
+                src={currentAvatar || avatarURL}
+                alt="avatar image"
+                width={150}
+                height={150}
+                priority
+                className="rounded-full bg-white p-1 mr-10"
+                />
+              </button>
             </div>
           </div>
 
@@ -332,6 +347,17 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+      )}
+
+      {showMediaWindow && (
+        <MediaView
+          uid={userID}
+          familyID={activeFamily ? activeFamily.id : ""}
+          familyView={familyView}
+          onClose={(returnValue: boolean) => {
+            setShowMediaWindow(false);
+          }}
+        />
       )}
 
     </div>

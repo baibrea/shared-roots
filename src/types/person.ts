@@ -1,5 +1,6 @@
 export interface Person {
   id: string;
+  avatar?: string;
 
   firstName: string;
   lastName: string;
@@ -14,5 +15,5 @@ export interface Person {
 
   parents: string[];
   children: string[];
-  spouse: string;
+  spouses: string[];
 }
