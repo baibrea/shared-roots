@@ -215,15 +215,19 @@ function NodeCard({ person, variant, isActive, onClick, onAdd }: {
       <div 
         onClick={onClick}
         className={`w-full h-full rounded-xl shadow-sm border-2 transition-all duration-300 cursor-pointer flex flex-col items-center justify-center p-2 text-center
-          ${isActive ? "border-[#698b6a] scale-105 shadow-md bg-[#698b6a]" : "border-transparent hover:border-gray-200 hover:shadow-md bg-white "}`}
+          ${isActive ? "border-none scale-105 shadow-md bg-[#2c3224]" : "border-transparent hover:border-gray-200 hover:shadow-md bg-white "}`}
       >
         {/* Icon also scales using a percentage of the card's width */}
         <div className={`rounded-full bg-gray-50 flex items-center justify-center mb-1 transition-colors group-hover:bg-gray-100 
           ${variant === 'large' ? 'w-1/3 h-1/3' : 'w-1/4 h-1/4'}`}>
-          <User className={`w-1/2 h-1/2 ${isActive ? "text-[#698b6a]" : "text-gray-400"}`} />
+          <User className={`w-1/2 h-1/2 ${isActive ? "text-[#698b6a]" : "text-gray-500"}`} />
         </div>
         
-        <span className="font-bold text-[#3A433A] leading-tight text-[min(2.5vw,14px)] md:text-[min(1.2vw,14px)]">
+        <span
+          className={`font-bold leading-tight text-[min(2.5vw,14px)] md:text-[min(1.2vw,14px)] ${
+            isActive ? "text-white" : "text-gray-500"
+          }`}
+        >
           {person?.firstName} <br/> {person?.lastName}
         </span>
       </div>
@@ -231,8 +235,9 @@ function NodeCard({ person, variant, isActive, onClick, onAdd }: {
       {/* Button scales slightly too */}
       <button
         onClick={(e) => { e.stopPropagation(); onAdd(); }}
-        className="absolute -top-1 -right-1 w-[20%] aspect-square max-w-[28px] min-w-[20px] bg-[#383838] text-white rounded-full flex items-center justify-center shadow-lg 
-                   opacity-0 group-hover:opacity-100 transform translate-y-1 group-hover:translate-y-0 transition-all duration-200 hover:bg-black z-20"
+        className={`absolute -top-1 -right-1 w-[20%] aspect-square max-w-[28px] min-w-[20px] rounded-full flex items-center justify-center shadow-lg 
+                   opacity-0 group-hover:opacity-100 transform translate-y-1 group-hover:translate-y-0 transition-all duration-200 z-20
+                   ${isActive ? "bg-gray-200 hover:bg-gray-300 text-black" : "text-white bg-[#383838] hover:bg-black"}`}
       >
         <Plus size="60%" />
       </button>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { PeopleProvider } from "@/lib/PeopleContext";
 import AuthRedirect from "@/lib/AuthRedirect";
 import Header from "@/components/Header";
+import { FamilyProvider } from "@/lib/FamilyContext";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,14 +26,14 @@ export default function RootLayout({children}: {children: React.ReactNode}) {
   return (
     <html lang="en">
       <body className="min-h-screen flex flex-col bg-[#CAD7CA]">
-        <PeopleProvider>
-          <AuthRedirect />
-          {/* Navbar */}
-          <Header />
+        <FamilyProvider>
+          <PeopleProvider>
+            <AuthRedirect />
 
-          {/* Page Content */}
-          <main className="flex-1">{children}</main>
-        </PeopleProvider>
+            {/* Page Content */}
+            <main className="flex-1">{children}</main>
+          </PeopleProvider>
+        </FamilyProvider>
       </body>
     </html>
   );

@@ -1,14 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { act, useEffect, useState } from "react";
 import AddPersonForm from "@/lib/AddPersonForm";
 import { usePeople } from "@/lib/PeopleContext";
 import { Person } from "@/types/person";
 import VisualGraph from "@/components/VisualGraph";
 import SearchBar from "@/components/SearchBar";
 import UpdatePersonForm from "@/lib/UpdatePersonForm";
+import { useFamily } from "@/lib/FamilyContext";
+import { onAuthStateChanged } from "firebase/auth";
+import { auth, db } from "@/lib/firebase";
+import { doc, getDoc } from "@firebase/firestore";
+import FamilyDropdown from "@/components/FamilyDropdown";
+import Sidebar from "@/components/Sidebar";
 
 export default function FamilyTreePage() {
+  type Family = {
+    id: string;
+    name: string;
+  };
+
   const { people } = usePeople();
   const [showForm, setShowForm] = useState(false);
   const [referencePerson, setReferencePerson] = useState<Person | null>(null);
@@ -18,6 +29,33 @@ export default function FamilyTreePage() {
 
   const selectedPerson = people.find(p => p.id === selectedPersonId) || null;
   const activePerson = selectedPerson || people[0] || null;
+  const { activeFamily } = useFamily();
+  const [userFamilies, setUserFamilies] = useState<Family[]>([]);
+
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      
+      if (user) {
+        const docRef = doc(db, "users", user.uid);
+        const docSnap = await getDoc(docRef);
+        const data = docSnap.data();
+
+        if (data) {
+          setFirstName(data.firstName || "");
+          setLastName(data.lastName || "");
+
+          const families = data.families || [];
+          setUserFamilies(families);
+        }
+      }
+
+    });
+    return () => unsubscribe();
+  }, []);
+
 
   const filteredPeople = people.filter((p) => {
     const fullName = (p.firstName + " " + p.lastName).toLowerCase();
@@ -67,8 +105,27 @@ export default function FamilyTreePage() {
 
   return (
     <div className="flex h-screen overflow-hidden">
+      <Sidebar
+        firstName={firstName}
+        lastName={lastName}
+      />
+
+
       {/* Family Tree */}
-      <div className="w-3/4 p-10 overflow-y-auto bg-[#2c3224] border-r border-gray-200 flex flex-col">
+      <div className="w-3/4 p-10 overflow-y-auto bg-[#b9c4b9] border-r border-gray-200 flex flex-col">
+        {userFamilies.length > 0 ? (
+          <FamilyDropdown 
+            families={userFamilies}
+            onCreateFamily={() => {}}
+            showCreate={false}
+          />
+        ) : (
+          <p
+            className="w-1/3 min-w-40 max-w-60 py-3 px-5 text-left bg-white hover:bg-gray-100 rounded-md font-semibold text-black"
+          >
+            No families found.
+          </p>
+        )}
 
         {people.length === 0 && <p>No people added yet.</p>}
 
@@ -102,7 +159,7 @@ export default function FamilyTreePage() {
       </div>
 
       {/* Right Panel */}
-      <div className="w-1/4 flex flex-col overflow-y-auto p-10 bg-[#E9E9E9] text-black">
+      <div className="w-1/4 flex flex-col overflow-y-auto p-10 bg-white text-black shadow-2xl">
         {/* UI when no family member is selected */}
         {!selectedPerson && (
           <div className="flex flex-col h-full">
@@ -138,7 +195,7 @@ export default function FamilyTreePage() {
           <div className="h-full">
             <button
               onClick={() => setSelectedPersonId(null)}
-              className="mb-6 px-4 py-2 bg-[#2c3224] text-white rounded-full hover:bg-[#3E4B2C] cursor-pointer"
+              className="mb-6 px-4 py-2 bg-[#2c3224] text-white rounded-2xl hover:bg-[#3E4B2C] cursor-pointer"
             >
               Back
             </button>
@@ -204,7 +261,7 @@ export default function FamilyTreePage() {
             {/* Button to modify family member profile */}
             <button
               onClick={() => setEditingPerson(selectedPerson)}
-              className="mt-6 px-4 py-2 bg-[#2c3224] text-white rounded-full hover:bg-[#3E4B2C] cursor-pointer"
+              className="mt-6 px-4 py-2 bg-[#2c3224] text-white rounded-2xl hover:bg-[#3E4B2C] cursor-pointer"
             >
               Edit {selectedPerson.firstName}
             </button>

@@ -9,214 +9,331 @@ import { logOut } from "@/lib/auth";
 import { auth, db } from "@/lib/firebase";
 import { createFamily } from "@/lib/family";
 import Inbox from "@/components/Inbox";
+import FamilyDropdown from "@/components/FamilyDropdown";
+import { useFamily } from "@/lib/FamilyContext";
+import Sidebar from "@/components/Sidebar";
 
 export default function Dashboard() {
-    // Declares User Information Variables
-    const [firstName, setFirstName] = useState("");
-    const [lastName, setLastName] = useState("");
-    const [userID, setUserID] = useState("");
-    const [inputText, setInputText] = useState("");
-    const [familyId, setFamilyId] = useState("");
-    const [familyName, setFamilyName] = useState("");
-    const [userFamilies, setUserFamilies] = useState<DocumentData[]>();
 
-    // Family Booleans
-    const [familyCreated, setFamilyCreated] = useState(false);
+  type Family = {
+    id: string;
+    name: string;
+  };
 
-    // Inbox
-    const [showInbox, setShowInbox] = useState(false);
-    const [hasPending, setHasPending] = useState(false);
+  type FamilyMember = {
+    name: string;
+  }
 
-    // Router for redirecting
-    const router = useRouter();
+  // Declares User Information Variables
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
+  const [userID, setUserID] = useState("");
+  const [userFamilies, setUserFamilies] = useState<Family[]>([]);
+  const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
 
-    useEffect(() => {
-      const unsubscribe = onAuthStateChanged(auth, async (user) => {
-        // User is signed in
-        if (user) {
-            // Get user's document from Firestore
-            const docRef = doc(db, "users", user.uid);
-            const docSnap = await getDoc(docRef);
-            const data = docSnap.data();
-            
-            // Assign User Information Variables
-            if (data) {
-                setFirstName(data.firstName);
-                setLastName(data.lastName);
-                setUserID(data.uid);
-                setUserFamilies(data.families);
+  // Family Booleans
+  const [familyCreated, setFamilyCreated] = useState(false);
 
-                // Check for pending invites
-                const inboxAlert = onSnapshot(
-                  query(collection(db, "users", user.uid, "inbox"), where("status", "==", "pending")),
-                  (snapshot) => {
-                    setHasPending(!snapshot.empty);
-                  },
-                  (error) => {
-                    console.error("Failed to retrieve pending invites:", error);
-                    setHasPending(false);
-                  }
-                );
-                return () => inboxAlert();
-            }
-        }
-      });
+  // Inbox
+  const [showInbox, setShowInbox] = useState(false);
+  const [hasPending, setHasPending] = useState(false);
 
-      return () => unsubscribe();
+  const [inboxView, setInboxView] = useState<"pending" | "archived" | "invite">("pending");
+  const openInbox = (viewType: "pending" | "archived" | "invite") => {
+      setInboxView(viewType);
+      setShowInbox(true);
+  };
 
-    }, []);
+  // Family Creation/Selection
+  const [showCreateFamily, setShowCreateFamily] = useState(false);
+  const [newFamilyName, setNewFamilyName] = useState("");
+  const { activeFamily, setActiveFamily } = useFamily();
 
-  return (
-    <div className="flex min-h-screen bg-zinc-50 font-sans dark:bg-[#FFFFFF]">
-      <meta name="viewport" content="width=device-width, initial-scale=1"/>
-      <aside className="flex flex-col min-h-screen w-60 bg-[#657B97] items-center justify-center gap-4 justify-start py-10">
-        {/*TODO: Add Shared Roots Logo*/}
-        <Image
-          className="dark:invert "
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-      </aside>
-      <main className="flex min-h-screen w-full max-w-7xl flex-col items-center justify-between py-32 px-16 bg-[#DDE7F4] sm:items-start">
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          {
-            showInbox && (
-            <Inbox 
-              docRef={doc(db, "users", userID)}
-              uid={userID}
-              families={userFamilies?.map(family => ({ id: family.id, name: family.name })) || []}
-              firstName={firstName}
-              lastName={lastName}
-              onClose={(returnValue: boolean) => {
-                setShowInbox(false);
+  // Router for redirecting
+  const router = useRouter();
 
-                // Hides alerts if pending invites are cleared
-                if (returnValue) {
-                  setHasPending(true);
-                } else {
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      // User is signed in
+      if (user) {
+          // Get user's document from Firestore
+          const docRef = doc(db, "users", user.uid);
+          const docSnap = await getDoc(docRef);
+          const data = docSnap.data();
+          
+          // Assign User Information Variables
+          if (data) {
+              setFirstName(data.firstName);
+              setLastName(data.lastName);
+              setUserID(data.uid);
+
+              const families = data.families || [];
+              setUserFamilies(families);
+
+              // Check for pending invites
+              const inboxAlert = onSnapshot(
+                query(collection(db, "users", user.uid, "inbox"), where("status", "==", "pending")),
+                (snapshot) => {
+                  setHasPending(!snapshot.empty);
+                },
+                (error) => {
+                  console.error("Failed to retrieve pending invites:", error);
                   setHasPending(false);
                 }
-              }}
-              onFamiliesUpdate={(newFamilies) => setUserFamilies(newFamilies)} 
-            />
-          )}
+              );
+              return () => inboxAlert();
+          }
+      }
+    });
 
-          {/*Greeting card*/}
-          <div className="flex max-w-2xl flex-col gap-4 bg-[#657B97] p-10 rounded-lg justify-center items-center ml-90">
-            <div className="flex flex-row items-center gap-4">
-              <h1 className="max-w-s text-3xl font-semibold leading-10 tracking-tight text-black">
-                Welcome to Shared Roots.
-              </h1>
+    return () => unsubscribe();
+
+  }, []);
+
+  useEffect(() => {
+    if (!activeFamily?.id) {
+      return;
+    }
+
+    const membersRef = collection(db, "families", activeFamily.id, "members");
+
+    const unsubscribeMembers = onSnapshot(membersRef, (snapshot) => {
+      const membersData = snapshot.docs.map((docSnap) => ({
+        ...docSnap.data()
+      })) as FamilyMember[];
+
+      setFamilyMembers(membersData);  
+    });
+
+    return () => {
+      setFamilyMembers([]);
+      unsubscribeMembers();
+    };
+  }, [activeFamily]);
+
+  return (
+    <div className="flex min-h-screen font-sans">
+      <meta name="viewport" content="width=device-width, initial-scale=1"/>
+
+      {/* Left Header */}
+      <Sidebar
+        firstName={firstName}
+        lastName={lastName}
+        hasPending={hasPending}
+        openInbox={openInbox}
+        showInbox={true}
+      />
+      
+      <main className="flex min-h-screen w-full flex-row gap-10 py-12 px-6 sm:px-10 lg:px-20 xl:px-36 bg-[#b9c4b9] sm:items-start">
+        <div className="flex flex-col w-full h-full gap-10">
+          {/* Top of the main area */}
+          <div className="flex flex-col w-full h-1/3 items-center bg-[#2c3224] p-8 rounded-2xl justify-center gap-6 text-center sm:items-start sm:text-left shadow-lg">
+
+            {/*Greeting card*/}
+            <div className="flex flex-row w-full justify-between items-center lg:flex-row">
+              <div className="ml-10">
+                <h1 className="max-w-s text-3xl font-semibold leading-10 tracking-tight text-white">
+                  Welcome to Shared Roots.
+                </h1>
+                <p className="max-w-md text-lg mt-4 text-[#bfcab2]">
+                  Greetings {firstName} {lastName}!
+                </p>
+              </div>
               <Image
               src="/avatar-girl-svgrepo-com.svg"
               alt="avatar image"
-              width={200}
-              height={200}
+              width={150}
+              height={150}
               priority
+              className="rounded-full bg-white p-1 mr-10"
               />
             </div>
-              <p className="max-w-md text-lg leading-8 text-black">
-                Greetings {firstName} {lastName}!
-              </p>
           </div>
 
+          {/* Bottom of main area */}
+          <div className="flex flex-row w-full h-2/3 gap-10">
+            {/* Timeline */}
+            <div className="bg-white w-1/2 min-w-0 rounded-2xl p-8 text-center text-black shadow-lg">
+              <p>Timeline stuff</p>
+            </div>
+
+            {/* Family Tree */}
+            <div className="flex flex-col w-1/2 min-w-0 h-full rounded-2xl gap-4 p-4 text-base bg-white shadow-lg">
+              <div className="flex flex-row items-center justify-between w-full gap-4 flex-wrap">
+                
+                {userFamilies.length > 0 ? (
+                  <FamilyDropdown 
+                    families={userFamilies}
+                    onCreateFamily={() => {
+                      setShowCreateFamily(true);
+                    }}
+                    showCreate={true}
+                  />
+                ) : (
+                  <button
+                    className="w-1/3 min-w-40 max-w-60 py-3 px-5 text-left bg-white hover:bg-gray-100 rounded-md font-semibold text-black"
+                    onClick={() => setShowCreateFamily(true)}
+                  >
+                    + Create Family
+                  </button>
+                )}
+
+                <button className="bg-[#7b8b69] hover:bg-[#5e6e4b] text-white py-2 px-9 rounded-md transition-colors disabled:opacity-50 w-[110px] h-[50px] shadow-md"
+                  onClick={async () => {
+                    try {
+                      openInbox("invite");
+                    } catch (error) {
+                      console.log("Inbox error", error);
+                      setShowInbox(false);
+                    }
+                  }}>
+                  <span className="relative inline-block">
+                    <p>
+                      Invite
+                    </p>
+                  </span>
+                </button>
+              </div>
+
+              <div className="flex flex-col w-full h-full px-4 items-center text-center text-black bg-blue">
+                <ul className="gap-6 w-full flex flex-col items-center">      
+                  {familyMembers.length === 0 ? (
+                    <li className="w-full">
+                      Create a family to get started!
+                    </li>
+                  ) : (    
+                    <>
+                      <h3 className="w-full text-left pt-2 font-bold text-xl"> Users </h3>
+                      <div className="grid grid-cols-[2fr_1fr_100px] w-full text-left border-b-2 border-gray-300 pb-4 justify-items-start">
+                        <p className="truncate">Username</p>
+                        <p className="truncate text-left">Role</p>
+                        <p className="truncate">Modify</p>
+                      </div>
+
+                      {familyMembers.map((member) => (
+                        <li key={member.name}
+                        className="w-full rounded-md transition-colors"
+                        >
+                          <div className="grid grid-cols-[2fr_1fr_100px] w-full items-center">
+                            <p className="text-left text-black truncate">
+                              {member.name}
+                            </p>
+
+                            <p className="text-left truncate">
+                              Admin
+                            </p>
+
+                            <div className="text-left whtiespace-nowrap">
+                              <button>
+                                EditRemove
+                              </button>
+                            </div>
+                          </div>
+                          
+                        </li>
+
+                      ))}
+                      <Link href="/familytree" className="flex w-1/2 bg-[#2c3224] hover:bg-[#1a1a1a] text-white items-center justify-center gap-2 rounded-md px-5 py-4 transition-colors shadow-lg">
+                        View Family Tree
+                      </Link>
+                    </>
+                  )}
+                </ul>
+
+              </div>
+
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <Link href="/familytree" className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-[#657B97] px-5 text-white transition-colors dark:hover:bg-[#556880] md:w-[158px]">
-            Family Tree
-          </Link>   
-        </div>
-        <div className="flex flex-col gap-4 w-full">
-          {/*Input Bar*/}
-          <input
-            type="text"
-            value={familyName}
-            onChange={(e) => setFamilyName(e.target.value)}
-            placeholder="Enter family name"
-            className="w-full px-4 py-2 border border-solid border-black/[.08] rounded-full dark:border-white/[.145] dark:bg-black dark:text-white focus:outline-none focus:ring-2 focus:ring-[#698b6a]"
-          />
-          <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-            <button
-              className="flex h-12 w-full items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-              onClick={async () => {
-                try {
-                  const family = await createFamily(familyName, firstName, lastName, userID);
-                  console.log("Succesfully created family:", familyName);
-                  setFamilyCreated(true);
+
+        {/* Right side of the main area */}
+        {/* Family Tree */}
+        
+      </main>
+
+      {showInbox && (
+        <Inbox 
+          docRef={doc(db, "users", userID)}
+          uid={userID}
+          families={userFamilies}
+          firstName={firstName}
+          lastName={lastName}
+          viewType={inboxView}
+          onClose={(returnValue: boolean) => {
+            setShowInbox(false);
+
+            // Hides alerts if pending invites are cleared
+            if (returnValue) {
+              setHasPending(true);
+            } else {
+              setHasPending(false);
+            }
+          }}
+          onFamiliesUpdate={(newFamilies) => setUserFamilies(newFamilies)} 
+        />
+      )}
+
+      {showCreateFamily && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-xl w-96">
+            
+            <h2 className="text-lg font-semibold mb-4 text-black">
+              Create Family
+            </h2>
+
+            <input
+              className="w-full border p-2 rounded mb-4 text-black"
+              placeholder="Family Name"
+              value={newFamilyName}
+              onChange={(e) => setNewFamilyName(e.target.value)}
+            />
+
+            <div className="flex justify-end gap-2">
+              <button
+                className="px-4 py-2 bg-gray-300 rounded-md text-black"
+                onClick={() => setShowCreateFamily(false)}
+              >
+                Cancel
+              </button>
+
+              <button
+                className="px-4 py-2 bg-[#2c3224] text-white rounded-md"
+                onClick={async () => {
+                  if (!newFamilyName) return;
+
+                  try {
+                  const familyId = await createFamily(
+                    newFamilyName,
+                    firstName,
+                    lastName,
+                    userID
+                  );
+                    console.log("Succesfully created family:", newFamilyName);
+                    setFamilyCreated(true);
+
 
                   // Update userFamilies state to include the newly created family
-                  setUserFamilies(families => [...(families || []), { id: family, name: familyName }]);
-                } catch (error) {
-                  console.error("Failed to create family:", error);
-                  setFamilyCreated(false);
-                }
-              }}
-            >
-              Create Family
-            </button>
-          </div>
-          <button
-            className="flex h-12 w-full items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            onClick={async () => {
-              console.log(userFamilies);
-            }}
-          >
-            View Families
-          </button>
-        </div>
-      </main>
-      
-      <aside className="flex flex-col min-h-screen w-120 bg-[white] items-center pt-10 pb-10">
-          <div className="flex flex-row items-center gap-4">
-            {/*TODO: Implement avatar retrievel from database*/}
-            <Image
-              src="/avatar-girl-svgrepo-com.svg"
-              alt="avatar image"
-              width={80}
-              height={80}
-              priority
-            />
-            <p className="max-w-md text-lg leading-20 text-black">
-              <strong>{firstName} {lastName}</strong>
-            </p>
-            {/*TODO: Add Dropdown View Profile*/}
-            <button className="bg-[#657B97] text-white py-2 px-9 rounded-3xl transition-colors dark:hover:bg-[#556880] disabled:opacity-50 w-[110px] h-[50px]"
-              onClick={async () => {
-                try {
-                  console.log("opened inbox")
-                  setShowInbox(true);
-                } catch (error) {
-                  console.log("Inbox error", error);
-                  setShowInbox(false);
-                }
-              }}>
-              <span className="relative inline-block">
-                <Image
-                  className="dark:invert"
-                  src="/mail-svgrepo-com.svg"
-                  alt="Inbox"
-                  width={50}
-                  height={50}
-                  priority
-                />
-                {hasPending && (
-                  <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 bg-red-600 rounded-full h-5 w-5"/>
-                )}
-              </span>
-            </button>
-          </div>
+                  const newFamily = { id: familyId, name: newFamilyName };
 
-          <button
-              type="submit"
-              className="mt-auto w-[160px] bg-[#657B97] text-white py-2 rounded-3xl transition-colors dark:hover:bg-[#556880]"
-              onClick={() => logOut(router)}
+                  setUserFamilies(prev => [...prev, newFamily]);
+
+                  setActiveFamily(newFamily);
+
+                  setShowCreateFamily(false);
+
+                  } catch (error) {
+                    console.error("Failed to create family:", error);
+                    setFamilyCreated(false);
+                  }
+                }}
               >
-              Sign Out
-          </button>
-      </aside>
+                Create
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
