@@ -135,7 +135,7 @@ export default function Dashboard() {
                 <h1 className="max-w-s text-3xl font-semibold leading-10 tracking-tight text-white">
                   Welcome to Shared Roots.
                 </h1>
-                <p className="max-w-md text-lg mt-4 text-white">
+                <p className="max-w-md text-lg mt-4 text-[#bfcab2]">
                   Greetings {firstName} {lastName}!
                 </p>
               </div>
@@ -178,7 +178,7 @@ export default function Dashboard() {
                   </button>
                 )}
 
-                <button className="bg-[#2c3224] hover:bg-[#1a1a1a] text-white py-2 px-9 rounded-md transition-colors disabled:opacity-50 w-[110px] h-[50px] shadow-md"
+                <button className="bg-[#7b8b69] hover:bg-[#5e6e4b] text-white py-2 px-9 rounded-md transition-colors disabled:opacity-50 w-[110px] h-[50px] shadow-md"
                   onClick={async () => {
                     try {
                       openInbox("invite");

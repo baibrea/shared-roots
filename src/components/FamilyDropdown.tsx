@@ -52,7 +52,7 @@ export default function FamilyDropdown({
 		<div ref={dropdownRef} className="relative w-1/3 min-w-40 max-w-60">
 			<button
 				onClick={() => setIsActive(!isActive)}
-				className="bg-gray-100 w-full border-2 border-[#2c3224] rounded-md text-black px-5 py-3 text-left focus:outline-none shadow-md"
+				className="bg-gray-100 hover:bg-gray-200 transition-colors w-full border-2 border-[#2c3224] rounded-md text-black px-5 py-3 text-left focus:outline-none shadow-md"
 			>
 				{activeFamily?.name || "Select Family"}
 			</button>
