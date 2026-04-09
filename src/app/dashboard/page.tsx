@@ -127,7 +127,7 @@ export default function Dashboard() {
       <main className="flex min-h-screen w-full flex-row gap-10 py-12 px-6 sm:px-10 lg:px-20 xl:px-36 bg-[#b9c4b9] sm:items-start">
         <div className="flex flex-col w-full h-full gap-10">
           {/* Top of the main area */}
-          <div className="flex flex-col w-full h-1/3 items-center bg-[#2c3224] p-8 rounded-2xl justify-center gap-6 text-center sm:items-start sm:text-left shadow-xl">
+          <div className="flex flex-col w-full h-1/3 items-center bg-[#2c3224] p-8 rounded-2xl justify-center gap-6 text-center sm:items-start sm:text-left shadow-lg">
 
             {/*Greeting card*/}
             <div className="flex flex-col w-full justify-between items-center gap-4 lg:flex-row">
@@ -151,12 +151,12 @@ export default function Dashboard() {
           {/* Bottom of main area */}
           <div className="flex flex-row w-full h-2/3 gap-10">
             {/* Timeline */}
-            <div className="bg-white w-1/2 min-w-0 rounded-2xl p-8 text-center text-black shadow-xl">
+            <div className="bg-white w-1/2 min-w-0 rounded-2xl p-8 text-center text-black shadow-lg">
               <p>Timeline stuff</p>
             </div>
 
             {/* Family Tree */}
-            <div className="flex flex-col w-1/2 min-w-0 h-full rounded-2xl gap-4 p-4 text-base bg-white shadow-xl">
+            <div className="flex flex-col w-1/2 min-w-0 h-full rounded-2xl gap-4 p-4 text-base bg-white shadow-lg">
               <div className="flex flex-row items-center justify-between w-full gap-4 flex-wrap">
                 
                 {userFamilies.length > 0 ? (
@@ -176,7 +176,7 @@ export default function Dashboard() {
                   </button>
                 )}
 
-                <button className="bg-[#2c3224] hover:bg-[#71766B] hover:text-black text-white py-2 px-9 rounded-md transition-colors disabled:opacity-50 w-[110px] h-[50px]"
+                <button className="bg-[#2c3224] hover:bg-[#1a1a1a] text-white py-2 px-9 rounded-md transition-colors disabled:opacity-50 w-[110px] h-[50px] shadow-md"
                   onClick={async () => {
                     try {
                       openInbox("invite");
@@ -231,7 +231,7 @@ export default function Dashboard() {
                         </li>
 
                       ))}
-                      <Link href="/familytree" className="flex w-1/2 bg-[#2c3224] text-white hover:bg-[#71766B] hover:text-black items-center justify-center gap-2 rounded-md px-5 py-4 transition-colors">
+                      <Link href="/familytree" className="flex w-1/2 bg-[#2c3224] hover:bg-[#1a1a1a] text-white items-center justify-center gap-2 rounded-md px-5 py-4 transition-colors shadow-lg">
                         Go to Family Tree
                       </Link>
                     </>

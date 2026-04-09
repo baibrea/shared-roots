@@ -45,15 +45,15 @@ export default function Sidebar({
             />
           </Link>
 
-          <Link href="/dashboard" className="flex h-12 py-10 w-full items-center justify-center text-white transition-colors dark:hover:bg-[#1a1a1a]">
+          <Link href="/dashboard" className="flex h-12 py-10 w-full items-center justify-center text-white transition-colors hover:bg-[#1a1a1a]">
             Dashboard
           </Link>
 
-          <Link href="/familytree" className="flex h-12 py-10 w-full items-center justify-center text-white transition-colors dark:hover:bg-[#1a1a1a]">
+          <Link href="/familytree" className="flex h-12 py-10 w-full items-center justify-center text-white transition-colors hover:bg-[#1a1a1a]">
             Family Tree
           </Link>
 
-          <Link href="/dashboard" className="flex h-12 py-10 w-full items-center justify-center text-white transition-colors dark:hover:bg-[#1a1a1a]">
+          <Link href="/dashboard" className="flex h-12 py-10 w-full items-center justify-center text-white transition-colors hover:bg-[#1a1a1a]">
             Timeline
           </Link>
         </div>
@@ -62,7 +62,7 @@ export default function Sidebar({
           {/*TODO: Add Dropdown View Profile*/}
           {showInbox && openInbox && (
             <button 
-              className="flex w-full items-center justify-center text-white py-6 px-9 transition-colors dark:hover:bg-[#1a1a1a] disabled:opacity-50"
+              className="flex w-full items-center justify-center text-white py-6 px-9 transition-colors hover:bg-[#1a1a1a] disabled:opacity-50"
               onClick={async () => openInbox("pending")}
             >
                 <Image
@@ -80,7 +80,7 @@ export default function Sidebar({
           )}
           <button
             type="submit"
-            className="w-full text-white py-6 transition-colors dark:hover:bg-[#1a1a1a]"
+            className="w-full text-white py-6 transition-colors hover:bg-[#1a1a1a]"
             onClick={() => logOut(router)}
           >
               Sign Out

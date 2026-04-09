@@ -52,14 +52,14 @@ export default function FamilyDropdown({
 		<div ref={dropdownRef} className="relative w-1/3 min-w-40 max-w-60">
 			<button
 				onClick={() => setIsActive(!isActive)}
-				className="bg-gray-100 w-full border-2 border-[#2c3224] rounded-md text-black px-5 py-3 text-left focus:outline-none"
+				className="bg-gray-100 w-full border-2 border-[#2c3224] rounded-md text-black px-5 py-3 text-left focus:outline-none shadow-md"
 			>
 				{activeFamily?.name || "Select Family"}
 			</button>
 
 			{isActive && (
 				<div className="absolute w-full mt-3 rounded-md shadow-lg z-50">
-					<ul className="w-full bg-white text-black rounded-md border-2 border-gray-300">
+					<ul className="w-full bg-white text-black rounded-md border-2 border-gray-300 shadow-xl">
 
 						{/* Dropdown List of families the user belongs to */}
 						{families.map(family => (
