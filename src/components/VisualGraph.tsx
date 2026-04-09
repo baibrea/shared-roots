@@ -402,7 +402,7 @@ function Inner({ nodes: inNodes, edges: inEdges, onNodeClick, focusNodeId, focus
           const centerX = (node.position as any).x + NODE_W / 2;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const centerY = (node.position as any).y + NODE_H / 2;
-          const zoom = typeof focusZoom === "number" ? focusZoom : 1.3;
+          const zoom = typeof focusZoom === "number" ? focusZoom : 1.15;
 
           // If setViewport is available, compute the transform so the desired
           // world coordinate (centerX, centerY) appears at the screen center
@@ -554,7 +554,7 @@ export default function VisualGraph({
           edges={displayEdges}
           onNodeClick={handleNodeClick}
           focusNodeId={focusNodeId}
-          focusZoom={1.3}
+          focusZoom={1.15}
           onRequestFit={() => setFocusNodeId(null)}
         />
       </div>
