@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { collection, getDoc, DocumentReference, onSnapshot, orderBy, query, where } from "firebase/firestore";
 import { db } from "@/lib/firebase";
-import { uploadMedia } from "@/lib/media";
-import useMediaGallery from "@/lib/MediaGallery";
+import { changeImage, deleteMedia, uploadMedia } from "@/lib/media";
+import { useMediaGallery } from "@/lib/media";
 import Image from "next/image";
 
 export default function MediaView ({
@@ -21,7 +21,6 @@ export default function MediaView ({
     const [fileName, setFileName] = useState<string>("No file selected");
     const [uploadResult, setUploadResult] = useState<string>("");
     const [resultColor, setResultColor] = useState<string>("text-red-600");
-
 
     const handleMediaUpload = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -57,7 +56,7 @@ export default function MediaView ({
                 [&::-webkit-scrollbar-thumb]:bg-gray-400
                 [&::-webkit-scrollbar-thumb:hover]:bg-gray-500"
             >
-                <div className="flex flex-row justify-end gap-40">
+                <div className="flex flex-row justify-end absolute gap-40 bg-[#f9f8f4] p-4 rounded-tl-lg rounded-tr-lg top-18 left-1/2 -translate-x-1/2 w-full max-w-6xl border-b border-gray-300">
                     <h1 className="text-3xl font-bold mr-60">Media Gallery</h1>    
                     <button
                         type="button"
@@ -76,6 +75,24 @@ export default function MediaView ({
                 <div className="grid grid-cols-3 gap-6 mt-4">
                     {media.map((mediaFile, index) => (
                         <div key={index} className="flex flex-col items-center gap-2">
+                            {mediaFile.mediaType.startsWith("image/") && (
+                                <span className="relative">
+                                <button
+                                    type="button"
+                                    onClick = {
+                                        familyView ? () => changeImage(uid, mediaFile.url, true, familyID) : () => changeImage(uid, mediaFile.url, false)
+                                    }
+                                    className="translate-x-20 flex h-5 w-5 items-center justify-center rounded-full border border-solid transition-colors hover:bg-[#657B97] dark:border-white/[.145] "
+                                >
+                                    <Image 
+                                        src="../edit-svgrepo-com.svg" 
+                                        alt="Change"
+                                        width={20}
+                                        height={20}
+                                    />
+                                </button>
+                                </span>
+                            )}
                             {mediaFile.mediaType === "image/svg+xml" ? (
                                 // Uses img tag for SVGs since Image does not support them
                                 <img
@@ -104,8 +121,9 @@ export default function MediaView ({
                 </div>
                 <hr className="my-4"></hr>
                 {uploadResult && <p className={`text-sm ${resultColor}`}>{uploadResult}</p>}
-                <div className="flex flex-row items-center gap-4">
-                    <form onSubmit={handleMediaUpload} className="flex flex-row items-center gap-4 w-full">
+                <div className="flex flex-row items-center gap-4 absolute bg-[#f9f8f4] p-4 rounded-lg max-w-6xl bottom-8 w-full justify-center left-1/2 -translate-x-1/2 border-t border-gray-300">
+                    {/* Upload form for media files: Covers the length of the above div */}
+                    <form onSubmit={handleMediaUpload} className="flex flex-row justify-center items-center gap-4 border border-gray-300 rounded-lg p-4 w-full max-w-3xl">
                         <input
                             type="text"
                             placeholder="Enter description"

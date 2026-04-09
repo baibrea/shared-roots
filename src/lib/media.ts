@@ -1,6 +1,7 @@
-import { doc, addDoc, getDoc, setDoc, updateDoc, collection, arrayUnion, getDocs, deleteDoc, onSnapshot } from "firebase/firestore";
+import { doc, addDoc, getDoc, setDoc, updateDoc, collection, arrayUnion, getDocs, deleteDoc, onSnapshot, orderBy, query } from "firebase/firestore";
 import { db, storage } from "@/lib/firebase";
 import { uploadBytes, ref, getDownloadURL, deleteObject } from "@firebase/storage";
+import { use, useEffect, useState } from "react";
 
 // Function to upload media file to family's cloud
 export async function uploadMedia(
@@ -59,6 +60,7 @@ export async function uploadMedia(
                 mediaURL: await getDownloadURL(storageRef),
                 mediaType,
                 description,
+                uploader: uploaderName,
                 uploadDate: new Date().getTime()
             });
         }
@@ -97,7 +99,7 @@ export async function deleteMedia(
 
 export async function changeImage(
     targetId: string,
-    mediaId: string,
+    mediaURL: string,
     familyView: boolean,
     familyID?: string | ""
 ): Promise<void> {
@@ -107,7 +109,7 @@ export async function changeImage(
         // Updates avatar in family document
         const familyRef = doc(db, "families", familyID || "", "people", targetId);
         await updateDoc(familyRef, {
-            avatar: mediaId
+            avatar: mediaURL
         });
 
     } else {
@@ -115,8 +117,68 @@ export async function changeImage(
         // Updates avatar in user document
         const userRef = doc(db, "users", targetId);
         await updateDoc(userRef, {
-            avatar: mediaId
+            avatar: mediaURL
         });
 
     }
 }
+
+type MediaFile = {
+    url: string;
+    description: string;
+    mediaType: string;
+    uploader: string;
+    uploadDate: number;
+}; 
+
+const useMediaGallery = (familyID: string, uid: string, familyView: boolean): MediaFile[] => {
+    const [mediaData, setMediaData] = useState<MediaFile[]>([]);
+
+    // Determines which collection to reference
+    const collectionRef = familyView ? collection(db, "families", familyID, "media") : collection(db, "users", uid, "media");
+
+    // Real-time listener for media storage
+    useEffect(() => {
+        const collectionQuery = query(collectionRef, orderBy("uploadDate", "desc"));
+        const unsubscribe = onSnapshot(collectionQuery, (snapshot) => {
+            const mediaList: { url: string; description: string; mediaType: string; uploader: string; uploadDate: number }[] = [];
+            snapshot.forEach((doc) => {
+                const data = doc.data();
+                mediaList.push({
+                    url: data.mediaURL,
+                    description: data.description,
+                    mediaType: data.mediaType,
+                    uploader: data.uploader,
+                    uploadDate: data.uploadDate
+                });
+            });
+            setMediaData(mediaList);
+        });
+
+        return () => unsubscribe();
+    }, [familyID, uid, familyView]);
+
+    return mediaData;
+};
+
+// Avatar Listener for Dashboard
+const useAvatar = (uid: string): string | null => {
+    const [avatarURL, setAvatarURL] = useState<string | null>(null);
+    useEffect(() => {
+        if (!uid) return;
+
+        const userRef = doc(db, "users", uid);
+        const unsubscribe = onSnapshot(userRef, (snapshot) => {
+            const data = snapshot.data();
+            if (data && data.avatar) {
+                setAvatarURL(data.avatar);
+            }
+        });
+
+        return () => unsubscribe();
+    }, [uid]);
+
+    return avatarURL;
+};
+
+export { useMediaGallery, useAvatar };

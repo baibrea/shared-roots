@@ -170,7 +170,15 @@ export default function FamilyTreePage() {
 
               <span className="relative">
                 <div className="py-30 bg-[#B5B5B5] rounded-2xl mb-10">
-                  image
+                  {selectedPerson.avatar ? (
+                    <img 
+                      src={selectedPerson.avatar}
+                      alt={`${selectedPerson.firstName} ${selectedPerson.lastName}`} 
+                      className="w-32 h-32 rounded-full object-cover mx-auto"
+                    />
+                  ) : (
+                    <div className="w-32 h-32 rounded-full bg-gray-300 mx-auto">image</div>
+                  )}
                 </div>
                 <button 
                   className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 rounded-full w-10 h-10 hover:bg-gray-300 cursor-pointer"
@@ -250,7 +258,7 @@ export default function FamilyTreePage() {
 
             {showMediaWindow && (
               <MediaView 
-                uid={currentUser?.uid || ""}
+                uid={selectedPerson.id || ""}
                 familyID={activeFamily?.id || ""}
                 familyView={true}
                 onClose={() => setShowMediaWindow(false)}

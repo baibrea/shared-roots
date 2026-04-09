@@ -11,8 +11,9 @@ import { createFamily } from "@/lib/family";
 import Inbox from "@/components/Inbox";
 import FamilyDropdown from "@/components/FamilyDropdown";
 import MediaView from "@/components/MediaView";
+import useInvites from "@/lib/inbox";
+import { useAvatar } from "@/lib/media";
 import { useFamily } from "@/lib/FamilyContext";
-import { uploadMedia } from "@/lib/media";
 
 export default function Dashboard() {
 
@@ -26,7 +27,9 @@ export default function Dashboard() {
   const [lastName, setLastName] = useState("");
   const [userID, setUserID] = useState("");
   const [userFamilies, setUserFamilies] = useState<Family[]>([]);
-  const [avatarURL, setAvatarURL] = useState("/avatar-girl-svgrepo-com.svg"); 
+  const [avatarURL, setAvatarURL] = useState("/avatar-girl-svgrepo-com.svg");
+  const currentAvatar = useAvatar(userID);
+  const inbox = useInvites(userID);
 
   // Media Handling Variables
   const [showMediaWindow, setShowMediaWindow] = useState(false);
@@ -67,7 +70,6 @@ export default function Dashboard() {
               setFirstName(data.firstName);
               setLastName(data.lastName);
               setUserID(data.uid);
-              setAvatarURL(data.avatarURL || "/avatar-girl-svgrepo-com.svg");
 
               const families = data.families || [];
               setUserFamilies(families);
@@ -158,7 +160,7 @@ export default function Dashboard() {
             onClick ={() => {setShowMediaWindow(true);}}
           >
             <Image
-              src={avatarURL}
+              src={currentAvatar || avatarURL}
               alt="avatar image"
               width={80}
               height={80}
@@ -188,7 +190,7 @@ export default function Dashboard() {
                 onClick ={() => {setShowMediaWindow(true);}}
               >
                 <Image
-                src={avatarURL}
+                src={currentAvatar || avatarURL}
                 alt="avatar image"
                 width={150}
                 height={150}
