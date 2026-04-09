@@ -29,7 +29,7 @@ export default function Dashboard() {
   const [userFamilies, setUserFamilies] = useState<Family[]>([]);
   const [avatarURL, setAvatarURL] = useState("/avatar-girl-svgrepo-com.svg");
   const currentAvatar = useAvatar(userID);
-  const inbox = useInvites(userID);
+  //const inbox = useInvites(userID);
 
   // Media Handling Variables
   const [showMediaWindow, setShowMediaWindow] = useState(false);
