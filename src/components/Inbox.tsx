@@ -87,10 +87,10 @@ export default function Inbox({
                     <button
                         type="button"
                         onClick={() => onClose(pendingInvites.length > 0)}
-                        className="flex h-10 w-10 items-center bg-[#2c3224] justify-center rounded-full border border-solid border-black/[.08] transition-colors hover:border-transparent hover:bg-black/[.01] dark:border-white/[.145] dark:hover:bg-[#1a1a1a]"
+                        className="flex h-10 w-10 items-center bg-[#2c3224] justify-center rounded-full transition-colors hover:bg-[#71766B]"
                     >
                         <Image 
-                            className="dark:invert"
+                            className="invert"
                             src="../close-1511-svgrepo-com.svg" 
                             alt="Close Inbox"
                             width={20}
@@ -194,7 +194,7 @@ export default function Inbox({
                                     <p><strong>Message:</strong> {invite.message}</p>
                                     <p><strong>Status:</strong> {invite.status}</p>
                                     <button
-                                    className="flex h-12 w-full items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] dark:text-white md:w-[158px]"
+                                    className="flex h-12 w-full items-center bg-[#2c3224] justify-center rounded-full px-5 transition-colors hover:bg-[#1a1a1a] text-white md:w-[158px]"
                                     onClick={async () => {
                                         try {
                                             await acceptInvite(invite.inviteId, invite.familyID, firstName, lastName, uid);
@@ -277,7 +277,7 @@ export default function Inbox({
                                 className="p-2 border rounded mt-2 w-full"
                             />
                             <button
-                            className="flex h-12 w-full items-center bg-[#2c3224] justify-center rounded-2xl border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:text-white dark:hover:bg-[#1a1a1a] md:w-[158px]"
+                            className="flex h-12 w-full items-center bg-[#2c3224] justify-center rounded-2xl px-5 transition-colors text-white hover:bg-[#1a1a1a] md:w-[158px]"
                             type="submit"  
                             >
                             Send Invite

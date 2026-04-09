@@ -112,7 +112,7 @@ export default function Dashboard() {
   }, [activeFamily]);
 
   return (
-    <div className="flex min-h-screen bg-zinc-50 font-sans dark:bg-[#FFFFFF]">
+    <div className="flex min-h-screen font-sans">
       <meta name="viewport" content="width=device-width, initial-scale=1"/>
 
       {/* Left Header */}
@@ -130,22 +130,24 @@ export default function Dashboard() {
           <div className="flex flex-col w-full h-1/3 items-center bg-[#2c3224] p-8 rounded-2xl justify-center gap-6 text-center sm:items-start sm:text-left shadow-lg">
 
             {/*Greeting card*/}
-            <div className="flex flex-col w-full justify-between items-center gap-4 lg:flex-row">
-              <h1 className="max-w-s text-3xl font-semibold leading-10 tracking-tight text-white">
-                Welcome to Shared Roots.
-              </h1>
+            <div className="flex flex-row w-full justify-between items-center lg:flex-row">
+              <div className="ml-10">
+                <h1 className="max-w-s text-3xl font-semibold leading-10 tracking-tight text-white">
+                  Welcome to Shared Roots.
+                </h1>
+                <p className="max-w-md text-lg mt-4 text-white">
+                  Greetings {firstName} {lastName}!
+                </p>
+              </div>
               <Image
               src="/avatar-girl-svgrepo-com.svg"
               alt="avatar image"
               width={150}
               height={150}
               priority
-              className="rounded-full bg-white p-1"
+              className="rounded-full bg-white p-1 mr-10"
               />
             </div>
-            <p className="max-w-md text-lg leading-8 text-white">
-              Greetings {firstName} {lastName}!
-            </p>
           </div>
 
           {/* Bottom of main area */}
@@ -232,7 +234,7 @@ export default function Dashboard() {
 
                       ))}
                       <Link href="/familytree" className="flex w-1/2 bg-[#2c3224] hover:bg-[#1a1a1a] text-white items-center justify-center gap-2 rounded-md px-5 py-4 transition-colors shadow-lg">
-                        Go to Family Tree
+                        View Family Tree
                       </Link>
                     </>
                   )}

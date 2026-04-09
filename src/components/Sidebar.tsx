@@ -25,10 +25,8 @@ export default function Sidebar({
     return (
         <aside className="flex flex-col min-h-screen items-center w-1/6 bg-[#2c3224] py-10">
         <div className="flex flex-col w-full items-center">
-          {/*TODO: Add Shared Roots Logo*/}
           <Link href="/dashboard" className="mb-10">
             <Image
-              className=""
               src="/WebLogoImage.png"
               alt="Next.js logo"
               width={130}
@@ -36,7 +34,7 @@ export default function Sidebar({
               priority
             />
             <Image
-              className="dark:invert"
+              className="invert"
               src="/WebLogoText.png"
               alt="Next.js logo"
               width={130}
@@ -66,7 +64,7 @@ export default function Sidebar({
               onClick={async () => openInbox("pending")}
             >
                 <Image
-                  className="dark:invert shrink-0"
+                  className="invert shrink-0"
                   src="/mail-svgrepo-com.svg"
                   alt="Inbox"
                   width={40}
