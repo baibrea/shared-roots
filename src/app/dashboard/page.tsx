@@ -290,14 +290,14 @@ export default function Dashboard() {
 
             <div className="flex justify-end gap-2">
               <button
-                className="px-4 py-2 bg-gray-400 rounded-md"
+                className="px-4 py-2 bg-gray-300 rounded-md text-black"
                 onClick={() => setShowCreateFamily(false)}
               >
                 Cancel
               </button>
 
               <button
-                className="px-4 py-2 bg-[#657B97] text-white rounded-md"
+                className="px-4 py-2 bg-[#2c3224] text-white rounded-md"
                 onClick={async () => {
                   if (!newFamilyName) return;
 
