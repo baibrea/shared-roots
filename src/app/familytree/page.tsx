@@ -112,7 +112,7 @@ export default function FamilyTreePage() {
 
 
       {/* Family Tree */}
-      <div className="w-3/4 p-10 overflow-y-auto bg-[#2c3224] border-r border-gray-200 flex flex-col">
+      <div className="w-3/4 p-10 overflow-y-auto bg-[#dde4dd] border-r border-gray-200 flex flex-col">
         {userFamilies.length > 0 ? (
           <FamilyDropdown 
             families={userFamilies}
@@ -159,7 +159,7 @@ export default function FamilyTreePage() {
       </div>
 
       {/* Right Panel */}
-      <div className="w-1/4 flex flex-col overflow-y-auto p-10 bg-[#E9E9E9] text-black">
+      <div className="w-1/4 flex flex-col overflow-y-auto p-10 bg-white text-black">
         {/* UI when no family member is selected */}
         {!selectedPerson && (
           <div className="flex flex-col h-full">
