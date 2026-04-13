@@ -64,17 +64,19 @@ export default function Sidebar({
               className="flex w-full items-center justify-center text-white py-6 px-9 transition-colors hover:bg-[#1a1a1a] disabled:opacity-50"
               onClick={async () => openInbox("pending")}
             >
-                <Image
-                  className="invert shrink-0"
-                  src="/mail-svgrepo-com.svg"
-                  alt="Inbox"
-                  width={40}
-                  height={40}
-                  priority
-                />
-                {hasPending && (
-                  <span className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 bg-red-600 rounded-full h-5 w-5"/>
-                )}
+                <div className="relative flex-shrink-0">
+                    <Image
+                    className="invert"
+                    src="/mail-svgrepo-com.svg"
+                    alt="Inbox"
+                    width={40}
+                    height={40}
+                    priority
+                    />
+                    {hasPending && (
+                    <span className="absolute top-0 right-0 translate-x-1/3 -translate-y-1/8 inline-flex items-center justify-center px-2 py-1 bg-red-600 rounded-full h-5 w-5"/>
+                    )}
+                </div>
             </button>
           )}
           <button
