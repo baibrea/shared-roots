@@ -93,7 +93,7 @@ export default function Sidebar({
               height={80}
               priority
             />
-            <p className="max-w-md text-lg leading-20 text-white pl-5">
+            <p className="max-w-md text-lg leading-normal text-white pl-5">
               <strong>{firstName} {lastName}</strong>
             </p>
             

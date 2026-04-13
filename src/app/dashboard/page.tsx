@@ -238,9 +238,12 @@ export default function Dashboard() {
                               Admin
                             </p>
 
-                            <div className="text-left whtiespace-nowrap">
+                            <div className="text-left whitespace-nowrap flex gap-1.5">
                               <button>
-                                EditRemove
+                                Edit
+                              </button>
+                              <button>
+                                Remove
                               </button>
                             </div>
                           </div>
