@@ -168,43 +168,122 @@ function buildGraph(
   levelKeys.forEach((level, rowIndex) => {
     const peopleInLevel = levels[level] ?? [];
 
-    // Build adjacency for spouse links within this level and compute connected components.
+    // Group people by their parent set (sibling subunits). This keeps sibling groups
+    // together and prevents cross-family marriages from merging distinct sibling
+    // clusters into a single unit (e.g. Homer<>Marge shouldn't collapse Simpson
+    // siblings with Bouvier siblings).
     const idToPerson = new Map(peopleInLevel.map(p => [p.id, p]));
-    const adj: Record<string, Set<string>> = {};
-    peopleInLevel.forEach(p => (adj[p.id] = new Set<string>()));
+    const sortedPeople = [...peopleInLevel].sort((a, b) => a.id.localeCompare(b.id));
+
+    const getParentKey = (p: Person) => {
+      const parents = (p.parents ?? []).slice().sort();
+      return parents.length ? parents.join("|") : `solo:${p.id}`;
+    };
+
+    const unitsByKey: Record<string, Person[]> = {};
+    const personUnitKey: Record<string, string> = {};
+    for (const p of sortedPeople) {
+      const key = getParentKey(p);
+      unitsByKey[key] = unitsByKey[key] ?? [];
+      unitsByKey[key].push(p);
+      personUnitKey[p.id] = key;
+    }
+
+    // Build adjacency between units when there are marriages across units
+    const unitAdj: Record<string, Set<string>> = {};
+    for (const k of Object.keys(unitsByKey)) unitAdj[k] = new Set<string>();
     for (const p of peopleInLevel) {
+      const myKey = personUnitKey[p.id];
       for (const sid of p.spouses ?? []) {
         if (!idToPerson.has(sid)) continue;
-        adj[p.id].add(sid);
-        adj[sid].add(p.id);
+        const otherKey = personUnitKey[sid];
+        if (otherKey && otherKey !== myKey) {
+          unitAdj[myKey].add(otherKey);
+          unitAdj[otherKey].add(myKey);
+        }
       }
     }
 
-    // Discover connected components (clusters) of spouses; each cluster becomes a layout unit.
-    const visited = new Set<string>();
-    const units: Person[][] = [];
-    const sortedPeople = [...peopleInLevel].sort((a, b) => a.id.localeCompare(b.id));
-    for (const p of sortedPeople) {
-      if (visited.has(p.id)) continue;
-      const compIds: string[] = [];
-      const q = [p.id];
-      visited.add(p.id);
+    // Find connected blocks of units; units within a block should be laid out
+    // contiguously so married units end up next to each other when possible.
+    const unitVisited = new Set<string>();
+    const unitBlocks: string[][] = [];
+    const allUnitKeys = Object.keys(unitsByKey).sort();
+    for (const k of allUnitKeys) {
+      if (unitVisited.has(k)) continue;
+      const q = [k];
+      unitVisited.add(k);
+      const block: string[] = [];
       while (q.length) {
-        const id = q.shift()!;
-        compIds.push(id);
-        for (const nb of adj[id] ?? []) {
-          if (!visited.has(nb)) {
-            visited.add(nb);
+        const cur = q.shift()!;
+        block.push(cur);
+        for (const nb of unitAdj[cur] ?? []) {
+          if (!unitVisited.has(nb)) {
+            unitVisited.add(nb);
             q.push(nb);
           }
         }
       }
-      const compPersons = compIds.map(id => idToPerson.get(id)!).sort((a, b) => a.id.localeCompare(b.id));
-      units.push(compPersons);
+      unitBlocks.push(block);
     }
 
-    // Sort units deterministically
-    units.sort((a, b) => a[0].id.localeCompare(b[0].id));
+    // Order units within each block so married units are adjacent (greedy path).
+    const orderedUnitKeys: string[] = [];
+    for (const block of unitBlocks) {
+      const degrees = block.map(k => ({ k, deg: (unitAdj[k]?.size ?? 0) }));
+      degrees.sort((a, b) => b.deg - a.deg || a.k.localeCompare(b.k));
+      const start = degrees[0].k;
+      const used = new Set<string>([start]);
+      const order = [start];
+      while (used.size < block.length) {
+        const last = order[order.length - 1];
+        let next = Array.from(unitAdj[last] ?? []).find(n => block.includes(n) && !used.has(n));
+        if (!next) next = block.find(k => !used.has(k))!;
+        order.push(next);
+        used.add(next);
+      }
+      orderedUnitKeys.push(...order);
+    }
+
+    // Create final units array (ordered list of Person[]). When ordering members
+    // inside each unit, place members who have spouses in the immediate left
+    // neighbor at the left edge, and those with spouses in the right neighbor at
+    // the right edge — this makes cross-unit marriages connect at unit ends.
+    const units: Person[][] = [];
+    for (let ui = 0; ui < orderedUnitKeys.length; ui++) {
+      const key = orderedUnitKeys[ui];
+      const leftKey = orderedUnitKeys[ui - 1];
+      const rightKey = orderedUnitKeys[ui + 1];
+      const members = [...unitsByKey[key]].sort((a, b) => a.id.localeCompare(b.id));
+
+      const leftArr: Person[] = [];
+      const rightArr: Person[] = [];
+      const middleArr: Person[] = [];
+      const otherArr: Person[] = [];
+
+      for (const m of members) {
+        const spouses = new Set(m.spouses ?? []);
+        const hasLeft = leftKey && [...spouses].some(sid => personUnitKey[sid] === leftKey);
+        const hasRight = rightKey && [...spouses].some(sid => personUnitKey[sid] === rightKey);
+        const hasOther = [...spouses].some(sid => {
+          const k = personUnitKey[sid];
+          return !!k && k !== key && k !== leftKey && k !== rightKey;
+        });
+
+        if (hasLeft && !hasRight) leftArr.push(m);
+        else if (hasRight && !hasLeft) rightArr.push(m);
+        else if (hasLeft && hasRight) middleArr.push(m);
+        else if (hasOther) otherArr.push(m);
+        else middleArr.push(m);
+      }
+
+      leftArr.sort((a, b) => a.id.localeCompare(b.id));
+      middleArr.sort((a, b) => a.id.localeCompare(b.id));
+      rightArr.sort((a, b) => a.id.localeCompare(b.id));
+      otherArr.sort((a, b) => a.id.localeCompare(b.id));
+
+      units.push([...leftArr, ...middleArr, ...rightArr, ...otherArr]);
+    }
 
     // Compute total width where each unit can be larger than two people
     const totalWidth = units.reduce((sum, unit, i) => {
