@@ -12,10 +12,6 @@ export async function uploadMedia(
     uploader: string,
     familyView: boolean
 ): Promise<void> { 
-    // Gets family document and checks if it exists
-    const familyRef = doc(db, "families", familyID);
-    const familySnap = await getDoc(familyRef);
-
     const userRef = doc(db, "users", uploader);
     const userSnap = await getDoc(userRef);
     const uploaderName = userSnap.data()?.firstName + " " + userSnap.data()?.lastName;
@@ -27,6 +23,11 @@ export async function uploadMedia(
     
     // Uploads to family storage if on the family tree page
     if (familyView) {
+        // Gets family document and checks if it exists
+        const familyRef = doc(db, "families", familyID);
+        const familySnap = await getDoc(familyRef);    
+
+
         if (!familySnap.exists()) {
             throw new Error("Family does not exist");
         } else {
@@ -67,6 +68,7 @@ export async function uploadMedia(
     }
 }
 
+// Not used anywhere at the moment
 export async function deleteMedia(
     userId: string,
     familyID: string,

@@ -11,7 +11,6 @@ import { createFamily } from "@/lib/family";
 import Inbox from "@/components/Inbox";
 import FamilyDropdown from "@/components/FamilyDropdown";
 import MediaView from "@/components/MediaView";
-import useInvites from "@/lib/inbox";
 import { useAvatar } from "@/lib/media";
 import { useFamily } from "@/lib/FamilyContext";
 import Sidebar from "@/components/Sidebar";
@@ -36,7 +35,6 @@ export default function Dashboard() {
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
   const [avatarURL, setAvatarURL] = useState("/avatar-girl-svgrepo-com.svg");
   const currentAvatar = useAvatar(userID);
-  //const inbox = useInvites(userID);
 
   // Media Handling Variables
   const [showMediaWindow, setShowMediaWindow] = useState(false);

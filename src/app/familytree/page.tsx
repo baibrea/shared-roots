@@ -1,6 +1,6 @@
 "use client";
 
-import { act, use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import AddPersonForm from "@/lib/AddPersonForm";
 import { usePeople } from "@/lib/PeopleContext";
 import { Person } from "@/types/person";
@@ -10,12 +10,12 @@ import UpdatePersonForm from "@/lib/UpdatePersonForm";
 import { useFamily } from "@/lib/FamilyContext";
 import { onAuthStateChanged } from "firebase/auth";
 import { auth, db } from "@/lib/firebase";
-import { doc, getDoc } from "@firebase/firestore";
+import { collection, doc, getDoc, onSnapshot, query, where } from "@firebase/firestore";
 import FamilyDropdown from "@/components/FamilyDropdown";
 import Sidebar from "@/components/Sidebar";
-import { uploadMedia } from "@/lib/media";
 import MediaView from "@/components/MediaView";
 import Image from "next/image";
+import Inbox from "@/components/Inbox";
 
 export default function FamilyTreePage() {
   type Family = {
@@ -46,6 +46,16 @@ export default function FamilyTreePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [showLoader, setShowLoader] = useState(true);
 
+  // Inbox
+  const [showInbox, setShowInbox] = useState(false);
+  const [hasPending, setHasPending] = useState(false);
+  const [userId, setUserId] = useState("");
+  const [inboxView, setInboxView] = useState<"pending" | "archived" | "invite">("pending");
+  const openInbox = (viewType: "pending" | "archived" | "invite") => {
+      setInboxView(viewType);
+      setShowInbox(true);
+  };
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowLoader(false);
@@ -65,9 +75,23 @@ export default function FamilyTreePage() {
         if (data) {
           setFirstName(data.firstName || "");
           setLastName(data.lastName || "");
+          setUserId(user.uid);
 
           const families = data.families || [];
           setUserFamilies(families);
+
+          // Check for pending invites
+          const inboxAlert = onSnapshot(
+            query(collection(db, "users", user.uid, "inbox"), where("status", "==", "pending")),
+              (snapshot) => {
+                setHasPending(!snapshot.empty);
+              },
+              (error) => {
+                console.error("Failed to retrieve pending invites:", error);
+                setHasPending(false);
+              }
+          );
+          return () => inboxAlert();
         }
       }
       setIsLoading(false);
@@ -144,6 +168,9 @@ export default function FamilyTreePage() {
       <Sidebar
         firstName={firstName}
         lastName={lastName}
+        hasPending={hasPending}
+        openInbox={openInbox}
+        showInbox={true}
       />
 
 
@@ -200,21 +227,6 @@ export default function FamilyTreePage() {
         {!selectedPerson && (
           <div className="flex flex-col h-full">
             <h2 className="text-xl font-bold mb-4">Directory</h2>
-            <div className="flex flex-row">
-              <input type="file" id="mediaFile"></input>
-              <button 
-                className="ml-4 px-4 py-2 mb-4 bg-[#2c3224] text-white rounded-full hover:bg-[#3E4B2C] cursor-pointer"
-                onClick={() => {uploadMedia(
-                  activeFamily?.id || "",
-                  (document.getElementById("mediaFile") as HTMLInputElement).files?.[0] || new File([], ""),
-                  (document.getElementById("mediaFile") as HTMLInputElement).files?.[0].type || "unknown",
-                  "Uploaded test media",
-                  currentUser?.uid || "",
-                  familyView
-                )}}
-              >Upload</button>
-            </div>
-            
             {/* New Component Integrated Here */}
             <SearchBar 
               value={searchTerm} 
@@ -347,12 +359,33 @@ export default function FamilyTreePage() {
                 familyView={true}
                 onClose={() => setShowMediaWindow(false)}
               />
-            )}
-
+            )}     
           </div>
 
         )}
       </div>
+
+      {showInbox && (
+        <Inbox 
+         docRef={doc(db, "users", userId)}
+         uid={userId}
+         families={userFamilies}
+         firstName={firstName}
+         lastName={lastName}
+         viewType={inboxView}
+         onClose={(returnValue: boolean) => {
+         setShowInbox(false);
+
+          // Hides alerts if pending invites are cleared
+          if (returnValue) {
+            setHasPending(true);
+          } else {
+              setHasPending(false);
+          }
+        }}
+        onFamiliesUpdate={(newFamilies) => setUserFamilies(newFamilies)} 
+        />
+      )}             
     </div>
   );
 }

@@ -4,6 +4,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { logOut } from "@/lib/auth";
 import { useRouter } from "next/navigation";
+import MediaView from "@/components/MediaView";
+import { useAvatar } from "@/lib/media";
+import { auth } from "@/lib/firebase";
+import { useState } from "react";
 
 type SidebarProps = {
     firstName: string;
@@ -21,6 +25,14 @@ export default function Sidebar({
     showInbox = false,
 }: SidebarProps) {
     const router = useRouter();
+
+    // Avatar
+    const [avatarURL, setAvatarURL] = useState("/avatar-girl-svgrepo-com.svg");
+    const currentAvatar = useAvatar(auth.currentUser?.uid || "");
+    const [showMediaWindow, setShowMediaWindow] = useState(false);
+    const familyView = false;
+    const userId = auth.currentUser?.uid || "";
+    const familyId = ""; //Does not matter since we're not using it in the sidebar
 
     return (
       <aside className="flex flex-col min-h-screen items-center w-1/5 bg-[#2c3224] py-10">
@@ -59,7 +71,6 @@ export default function Sidebar({
 
 
         <div className="flex flex-col w-full items-center mt-auto">
-          {/*TODO: Add Dropdown View Profile*/}
           {showInbox && openInbox && (
             <button 
               className="flex w-full items-center justify-center text-white py-6 px-9 transition-colors hover:bg-[#1a1a1a] disabled:opacity-50"
@@ -88,20 +99,35 @@ export default function Sidebar({
               Sign Out
           </button>
           <div className="flex flex-col justify-left items-center text-center p-4 lg:flex-row">
-            {/*TODO: Implement avatar retrievel from database*/}
-            <Image
-              src="/avatar-girl-svgrepo-com.svg"
-              alt="avatar image"
-              width={80}
-              height={80}
-              priority
-            />
+            <button 
+                className="hover:brightness-75 transition-all duration-150 rounded-full"
+                onClick ={() => {setShowMediaWindow(true);}}
+            >
+              <Image
+                src={currentAvatar || "/avatar-girl-svgrepo-com.svg"}
+                alt="avatar image"
+                width={80}
+                height={80}
+                className="rounded-full bg-white p-1"
+                priority
+              />
+            </button>
             <p className="max-w-md text-lg leading-20 text-white pl-5">
               <strong>{firstName} {lastName}</strong>
             </p>
             
           </div>
         </div>
+          {showMediaWindow && (
+            <MediaView
+              uid={userId}
+              familyID={familyId}
+              familyView={familyView}
+              onClose={(returnValue: boolean) => {
+              setShowMediaWindow(false);
+              }}
+            />
+          )}
       </aside>
     );
 }
