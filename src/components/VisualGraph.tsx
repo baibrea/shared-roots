@@ -682,7 +682,7 @@ function Inner({ nodes: inNodes, edges: inEdges, onNodeClick, focusNodeId, focus
             }
             if (onRequestFit) onRequestFit(); // Clear focus node externally if needed
           }}
-          className="px-2 py-1 rounded bg-gray-800 text-white text-sm shadow"
+          className="px-6 py-3 bg-gray-800 text-white text-sm shadow rounded-md"
         >
           Reset View
         </button>

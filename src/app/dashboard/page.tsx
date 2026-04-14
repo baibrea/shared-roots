@@ -11,7 +11,6 @@ import { createFamily } from "@/lib/family";
 import Inbox from "@/components/Inbox";
 import FamilyDropdown from "@/components/FamilyDropdown";
 import MediaView from "@/components/MediaView";
-import useInvites from "@/lib/inbox";
 import { useAvatar } from "@/lib/media";
 import { useFamily } from "@/lib/FamilyContext";
 import Sidebar from "@/components/Sidebar";
@@ -25,6 +24,7 @@ export default function Dashboard() {
 
   type FamilyMember = {
     name: string;
+    role: string;
   }
 
   // Declares User Information Variables
@@ -35,7 +35,6 @@ export default function Dashboard() {
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
   const [avatarURL, setAvatarURL] = useState("/avatar-girl-svgrepo-com.svg");
   const currentAvatar = useAvatar(userID);
-  //const inbox = useInvites(userID);
 
   // Media Handling Variables
   const [showMediaWindow, setShowMediaWindow] = useState(false);
@@ -59,8 +58,20 @@ export default function Dashboard() {
   const [newFamilyName, setNewFamilyName] = useState("");
   const { activeFamily, setActiveFamily } = useFamily();
 
+  // Loading screen
+  const [isLoading, setIsLoading] = useState(true);
+  const [showLoader, setShowLoader] = useState(true);
+
   // Router for redirecting
   const router = useRouter();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowLoader(false);
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -80,6 +91,8 @@ export default function Dashboard() {
               const families = data.families || [];
               setUserFamilies(families);
 
+              setIsLoading(false);
+
               // Check for pending invites
               const inboxAlert = onSnapshot(
                 query(collection(db, "users", user.uid, "inbox"), where("status", "==", "pending")),
@@ -92,13 +105,18 @@ export default function Dashboard() {
                 }
               );
               return () => inboxAlert();
+          } else {
+            setIsLoading(false);
           }
+      } else {
+          setActiveFamily(null);
+          setIsLoading(false);
       }
     });
 
     return () => unsubscribe();
 
-  }, []);
+  }, [setActiveFamily]);
 
   useEffect(() => {
     if (!activeFamily?.id) {
@@ -121,6 +139,23 @@ export default function Dashboard() {
     };
   }, [activeFamily]);
 
+  if (isLoading || showLoader) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#2c3224]">
+        <div className="flex flex-col items-center gap-4">
+          <Image
+            src="tree-decidious-svgrepo-com.svg"
+            alt="Loading..."
+            width={60} 
+            height={60}
+            className="animate-pulse invert"
+          />
+          <p className="text-white text-lg">Loading your dashboard...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="flex min-h-screen font-sans">
       <meta name="viewport" content="width=device-width, initial-scale=1"/>
@@ -137,7 +172,7 @@ export default function Dashboard() {
       <main className="flex min-h-screen w-full flex-row gap-10 py-12 px-6 sm:px-10 lg:px-20 xl:px-36 bg-[#b9c4b9] sm:items-start">
         <div className="flex flex-col w-full h-full gap-10">
           {/* Top of the main area */}
-          <div className="flex flex-col w-full h-1/3 items-center bg-[#2c3224] p-8 rounded-2xl justify-center gap-6 text-center sm:items-start sm:text-left shadow-lg">
+          <div className="flex flex-col w-full h-1/3 items-center bg-[#2c3224] p-8 rounded-2xl justify-center gap-6 text-center sm:items-start sm:text-left shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
 
             {/*Greeting card*/}
             <div className="flex flex-row w-full justify-between items-center lg:flex-row">
@@ -168,12 +203,12 @@ export default function Dashboard() {
           {/* Bottom of main area */}
           <div className="flex flex-row w-full h-2/3 gap-10">
             {/* Timeline */}
-            <div className="bg-white w-1/2 min-w-0 rounded-2xl p-8 text-center text-black shadow-lg">
-              <p>Timeline stuff</p>
+            <div className="bg-white w-1/2 min-w-0 rounded-2xl p-8 text-center text-black shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
+              <p>Timeline</p>
             </div>
 
             {/* Family Tree */}
-            <div className="flex flex-col w-1/2 min-w-0 h-full rounded-2xl gap-4 p-4 text-base bg-white shadow-lg">
+            <div className="flex flex-col w-1/2 min-w-0 h-full rounded-2xl gap-4 p-4 text-base bg-white shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
               <div className="flex flex-row items-center justify-between w-full gap-4 flex-wrap">
                 
                 {userFamilies.length > 0 ? (
@@ -186,7 +221,7 @@ export default function Dashboard() {
                   />
                 ) : (
                   <button
-                    className="w-1/3 min-w-40 max-w-60 py-3 px-5 text-left bg-white hover:bg-gray-100 rounded-md font-semibold text-black"
+                    className="w-1/3 min-w-40 max-w-60 py-3 px-5 text-left bg-gray-100 hover:bg-gray-200 rounded-md font-semibold text-black transition-all border-2 border-[#2c3224]"
                     onClick={() => setShowCreateFamily(true)}
                   >
                     + Create Family
@@ -235,15 +270,27 @@ export default function Dashboard() {
                             </p>
 
                             <p className="text-left truncate">
-                              Admin
+                              {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
                             </p>
 
-                            <div className="text-left whitespace-nowrap flex gap-1.5">
+                            <div className="flex flex-row gap-2 text-left whitespace-nowrap">
                               <button>
-                                Edit
+                                <Image
+                                  src="edit-svgrepo-com.svg"
+                                  alt="Edit"
+                                  width={30}
+                                  height={30}
+                                  className="opacity-75 cursor-pointer hover:opacity-90 transition-all"
+                                />
                               </button>
                               <button>
-                                Remove
+                                <Image
+                                  src="close-1511-svgrepo-com.svg"
+                                  alt="Remove"
+                                  width={20}
+                                  height={20}
+                                  className="opacity-75 cursor-pointer hover:opacity-90 transition-all"
+                                />
                               </button>
                             </div>
                           </div>
@@ -257,18 +304,13 @@ export default function Dashboard() {
                     </>
                   )}
                 </ul>
-
               </div>
-
             </div>
           </div>
         </div>
-
-        {/* Right side of the main area */}
-        {/* Family Tree */}
-        
       </main>
 
+      {/* Inbox Button */}
       {showInbox && (
         <Inbox 
           docRef={doc(db, "users", userID)}
@@ -291,6 +333,7 @@ export default function Dashboard() {
         />
       )}
 
+      {/* Form to create family */}
       {showCreateFamily && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
           <div className="bg-white p-6 rounded-xl w-96">
@@ -308,14 +351,14 @@ export default function Dashboard() {
 
             <div className="flex justify-end gap-2">
               <button
-                className="px-4 py-2 bg-gray-300 rounded-md text-black"
+                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 transition-all rounded-md text-black"
                 onClick={() => setShowCreateFamily(false)}
               >
                 Cancel
               </button>
 
               <button
-                className="px-4 py-2 bg-[#2c3224] text-white rounded-md"
+                className="px-4 py-2 bg-[#7b8b69] hover:bg-[#5e6e4b] transition-all text-white rounded-md"
                 onClick={async () => {
                   if (!newFamilyName) return;
 
