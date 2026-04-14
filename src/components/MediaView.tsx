@@ -17,7 +17,6 @@ export default function MediaView ({
     onClose: (returnValue: boolean) => void;
 }) {
     const media = useMediaGallery(familyID, uid, familyView);
-    const [uploadMessage, setUploadMessage] = useState<string>("");
     const [fileName, setFileName] = useState<string>("No file selected");
     const [uploadResult, setUploadResult] = useState<string>("");
     const [resultColor, setResultColor] = useState<string>("text-red-600");
@@ -129,7 +128,6 @@ export default function MediaView ({
                             placeholder="Enter description"
                             className="flex-1 px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-[#657B97] max-w-lg"
                             name="description"
-                            onChange ={(e) => setUploadMessage(e.target.value)}
                         />
 
                         <label htmlFor="mediaFile" className="px-4 py-2 bg-[#657B97] text-white rounded-full hover:bg-[#3E4B2C] cursor-pointer">
