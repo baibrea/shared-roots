@@ -60,9 +60,10 @@ export default function MediaView ({
                     <button
                         type="button"
                         onClick={() => onClose(false)}
-                        className="flex h-10 w-10 items-center bg-[#657B97] justify-center rounded-full border border-solid border-black/[.08] transition-colors hover:border-transparent hover:bg-black/[.01] dark:border-white/[.145] dark:hover:bg-[#1a1a1a]"
+                        className="flex h-10 w-10 items-center bg-[#2c3224] hover:bg-[#1a1a1a] justify-center rounded-full border border-solid transition-colors hover:border-transparent dark:border-white/[.145] dark:hover:bg-[#1a1a1a]"
                     >
                         <Image 
+                            className="invert"
                             src="../close-1511-svgrepo-com.svg" 
                             alt="Close"
                             width={20}
@@ -130,7 +131,7 @@ export default function MediaView ({
                             name="description"
                         />
 
-                        <label htmlFor="mediaFile" className="px-4 py-2 bg-[#657B97] text-white rounded-full hover:bg-[#3E4B2C] cursor-pointer">
+                        <label htmlFor="mediaFile" className="px-4 py-2 bg-[#7b8b69] hover:bg-[#5e6e4b] text-white rounded-2xl cursor-pointer transition-all">
                             Choose File
                         </label>                    
                         <input 
@@ -139,7 +140,7 @@ export default function MediaView ({
                         <label htmlFor="mediaFile" className="text-lg text-gray-600">{fileName}</label>
                         
                         <button 
-                            className="ml-4 px-4 py-2 bg-[#2c3224] text-white rounded-full hover:bg-[#3E4B2C] cursor-pointer"
+                            className="ml-4 px-4 py-2 bg-[#2c3224] text-white rounded-2xl hover:bg-[#1a1a1a] cursor-pointer transition-all"
                             type ="submit"
                             >Upload
                         </button>

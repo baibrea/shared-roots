@@ -29,6 +29,9 @@ export function PeopleProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   useEffect(() => {
+
+    setPeople([]);
+
     // Check if a user is currently logged in and get their family ID(s)
     if (!user || !activeFamily?.id) return;
 

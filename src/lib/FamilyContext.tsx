@@ -26,8 +26,9 @@ export function FamilyProvider({ children }: { children: React.ReactNode }) {
         const unsubscribe = onAuthStateChanged(auth, (currUser) => {
             setUser(currUser);
 
+            setActiveFamily(null);
+
             if (!currUser) {
-                setActiveFamily(null);
                 return;
             }
 

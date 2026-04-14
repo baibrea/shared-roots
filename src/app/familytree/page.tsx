@@ -14,6 +14,7 @@ import { collection, doc, getDoc, onSnapshot, query, where } from "@firebase/fir
 import FamilyDropdown from "@/components/FamilyDropdown";
 import Sidebar from "@/components/Sidebar";
 import MediaView from "@/components/MediaView";
+import Image from "next/image";
 import Inbox from "@/components/Inbox";
 
 export default function FamilyTreePage() {
@@ -41,6 +42,10 @@ export default function FamilyTreePage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
 
+  // Loading
+  const [isLoading, setIsLoading] = useState(true);
+  const [showLoader, setShowLoader] = useState(true);
+
   // Inbox
   const [showInbox, setShowInbox] = useState(false);
   const [hasPending, setHasPending] = useState(false);
@@ -50,6 +55,14 @@ export default function FamilyTreePage() {
       setInboxView(viewType);
       setShowInbox(true);
   };
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowLoader(false);
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -81,9 +94,16 @@ export default function FamilyTreePage() {
           return () => inboxAlert();
         }
       }
-
+      setIsLoading(false);
     });
-    return () => unsubscribe();
+    const fallback = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+
+    return () => {
+      clearTimeout(fallback);
+      unsubscribe();
+    };
   }, []);
 
   const filteredPeople = people.filter((p) => {
@@ -130,6 +150,23 @@ export default function FamilyTreePage() {
     }
 
     return age;
+  }
+
+  if (isLoading || showLoader) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#2c3224]">
+        <div className="flex flex-col items-center gap-4">
+          <Image
+            src="tree-decidious-svgrepo-com.svg"
+            alt="Loading..."
+            width={60} 
+            height={60}
+            className="animate-pulse invert"
+          />
+          <p className="text-white text-lg">Loading your family tree...</p>
+        </div>
+      </div>
+    );
   }
 
   return (
@@ -191,7 +228,7 @@ export default function FamilyTreePage() {
       </div>
 
       {/* Right Panel */}
-      <div className="w-1/4 flex flex-col overflow-y-auto p-10 bg-white text-black shadow-2xl">
+      <div className="w-1/4 flex flex-col overflow-y-auto px-8 py-4 bg-white text-black shadow-2xl">
         {/* UI when no family member is selected */}
         {!selectedPerson && (
           <div className="flex flex-col h-full">
@@ -226,7 +263,7 @@ export default function FamilyTreePage() {
           <div className="h-full">
             <button
               onClick={() => setSelectedPersonId(null)}
-              className="mb-6 px-4 py-2 bg-[#2c3224] text-white rounded-2xl hover:bg-[#3E4B2C] cursor-pointer"
+              className="mb-6 px-4 py-2 bg-[#2c3224] text-white rounded-2xl hover:bg-[#1a1a1a] cursor-pointer transition-all"
             >
               Back
             </button>
@@ -234,19 +271,19 @@ export default function FamilyTreePage() {
             <div className="text-center mb-8">
 
               <span className="relative">
-                <div className="py-30 bg-[#B5B5B5] rounded-2xl mb-10">
+                <div className="py-30 bg-[#B5B5B5] rounded-2xl mb-4">
                   {selectedPerson.avatar ? (
                     <img 
                       src={selectedPerson.avatar}
                       alt={`${selectedPerson.firstName} ${selectedPerson.lastName}`} 
-                      className="w-32 h-32 rounded-full object-cover mx-auto"
+                      className="w-26 h-26 rounded-full object-cover mx-auto"
                     />
                   ) : (
-                    <div className="w-32 h-32 rounded-full bg-gray-300 mx-auto">image</div>
+                    <div className="w-26 h-26 rounded-full bg-gray-300 mx-auto">image</div>
                   )}
                 </div>
                 <button 
-                  className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 rounded-full w-10 h-10 hover:bg-gray-300 cursor-pointer"
+                  className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 rounded-full w-10 h-10 hover:bg-gray-300 cursor-pointer transition-all"
                   onClick={() => setShowMediaWindow(true)}
                 >
                   <img src="/edit-svgrepo-com.svg" alt="Edit" />
@@ -309,7 +346,7 @@ export default function FamilyTreePage() {
             {/* Button to modify family member profile */}
             <button
               onClick={() => setEditingPerson(selectedPerson)}
-              className="mt-6 px-4 py-2 bg-[#2c3224] text-white rounded-2xl hover:bg-[#3E4B2C] cursor-pointer"
+              className="my-6 px-4 py-2 bg-[#2c3224] text-white rounded-2xl hover:bg-[#1a1a1a] cursor-pointer transition-all"
             >
               Edit {selectedPerson.firstName}
             </button>
