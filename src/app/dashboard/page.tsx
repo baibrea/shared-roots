@@ -139,7 +139,7 @@ export default function Dashboard() {
     };
   }, [activeFamily]);
 
-  if (isLoading || showLoader) {
+  if (isLoading && showLoader) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#2c3224]">
         <div className="flex flex-col items-center gap-4">
@@ -202,13 +202,8 @@ export default function Dashboard() {
 
           {/* Bottom of main area */}
           <div className="flex flex-row w-full h-2/3 gap-10">
-            {/* Timeline */}
-            <div className="bg-white w-1/2 min-w-0 rounded-2xl p-8 text-center text-black shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
-              <p>Timeline</p>
-            </div>
-
             {/* Family Tree */}
-            <div className="flex flex-col w-1/2 min-w-0 h-full rounded-2xl gap-4 p-4 text-base bg-white shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
+            <div className="flex flex-col w-full px-20 py-10 min-w-0 h-full rounded-2xl gap-4 text-base bg-white shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
               <div className="flex flex-row items-center justify-between w-full gap-4 flex-wrap">
                 
                 {userFamilies.length > 0 ? (
@@ -298,9 +293,14 @@ export default function Dashboard() {
                         </li>
 
                       ))}
-                      <Link href="/familytree" className="flex w-1/2 bg-[#2c3224] hover:bg-[#1a1a1a] text-white items-center justify-center gap-2 rounded-md px-5 py-4 transition-colors shadow-lg">
-                        View Family Tree
-                      </Link>
+                      <div className="flex flex-row gap-8 mt-8">
+                        <Link href="/familytree" className="flex w-full bg-[#2c3224] hover:bg-[#1a1a1a] text-white items-center justify-center gap-2 rounded-md px-5 py-4 transition-colors shadow-lg whitespace-nowrap">
+                            View Family Tree
+                        </Link>
+                        <Link href="/timeline" className="flex w-full bg-[#2c3224] hover:bg-[#1a1a1a] text-white items-center justify-center gap-2 rounded-md px-5 py-4 transition-colors shadow-lg">
+                            View Timeline
+                        </Link>
+                      </div>
                     </>
                   )}
                 </ul>

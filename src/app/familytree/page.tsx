@@ -16,6 +16,7 @@ import Sidebar from "@/components/Sidebar";
 import MediaView from "@/components/MediaView";
 import Image from "next/image";
 import Inbox from "@/components/Inbox";
+import { User } from "lucide-react";
 
 export default function FamilyTreePage() {
   type Family = {
@@ -59,7 +60,7 @@ export default function FamilyTreePage() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowLoader(false);
-    }, 600);
+    }, 800);
 
     return () => clearTimeout(timer);
   }, []);
@@ -152,7 +153,7 @@ export default function FamilyTreePage() {
     return age;
   }
 
-  if (isLoading || showLoader) {
+  if (isLoading && showLoader) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#2c3224]">
         <div className="flex flex-col items-center gap-4">
@@ -228,10 +229,10 @@ export default function FamilyTreePage() {
       </div>
 
       {/* Right Panel */}
-      <div className="w-1/4 flex flex-col overflow-y-auto px-8 py-4 bg-white text-black shadow-2xl">
+      <div className="w-3/10 flex flex-col overflow-y-auto py-4 bg-white text-black shadow-2xl">
         {/* UI when no family member is selected */}
         {!selectedPerson && (
-          <div className="flex flex-col h-full">
+          <div className="flex flex-col h-full py-6 pl-6">
             <h2 className="text-xl font-bold mb-4">Directory</h2>
             {/* New Component Integrated Here */}
             <SearchBar 
@@ -248,10 +249,23 @@ export default function FamilyTreePage() {
                 <li 
                   key={p.id} 
                   onClick={() => setSelectedPersonId(p.id)}
-                  className="p-3 rounded-xl border border-transparent hover:border-gray-100 hover:bg-gray-50 cursor-pointer transition-all"
+                  className="p-3 rounded-xl border border-transparent hover:border-gray-100 hover:bg-gray-50 cursor-pointer transition-all flex flex-row"
                 >
-                  <div className="font-medium">{p.firstName} {p.lastName}</div>
-                  <div className="text-xs text-gray-400">{p.birthDate?.split('-')[0] || "---"}</div>
+                  <div>
+                    {p.avatar ? (
+                      <div>
+                        <img
+                          src={p.avatar}
+                          className="w-12 h-12 mr-4 rounded-full"
+                        />
+                      </div>
+                    ) : (<User className="w-10 h-10 mr-4 text-gray-400" />)}
+                  </div>
+                
+                  <div className="flex flex-col">
+                    <div className="font-medium">{p.firstName} {p.lastName}</div>
+                    <div className="text-xs text-gray-400">{p.birthDate?.split('-')[0] || "---"}</div>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -260,7 +274,7 @@ export default function FamilyTreePage() {
 
         {/* UI when a family member is selected */}
         {selectedPerson && (
-          <div className="h-full">
+          <div className="h-full px-8">
             <button
               onClick={() => setSelectedPersonId(null)}
               className="mb-6 px-4 py-2 bg-[#2c3224] text-white rounded-2xl hover:bg-[#1a1a1a] cursor-pointer transition-all"
@@ -271,15 +285,15 @@ export default function FamilyTreePage() {
             <div className="text-center mb-8">
 
               <span className="relative">
-                <div className="py-30 bg-[#B5B5B5] rounded-2xl mb-4">
+                <div className="p-4 rounded-2xl mb-4 flex items-center justify-center">
                   {selectedPerson.avatar ? (
                     <img 
                       src={selectedPerson.avatar}
                       alt={`${selectedPerson.firstName} ${selectedPerson.lastName}`} 
-                      className="w-26 h-26 rounded-full object-cover mx-auto"
+                      className="w-50 h-50 rounded-2xl object-cover mx-auto"
                     />
                   ) : (
-                    <div className="w-26 h-26 rounded-full bg-gray-300 mx-auto">image</div>
+                    <User className="w-50 h-50 text-gray-400" />
                   )}
                 </div>
                 <button 
