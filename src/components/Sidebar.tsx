@@ -70,7 +70,6 @@ export default function Sidebar({
 
 
         <div className="flex flex-col w-full items-center mt-auto">
-          {/*TODO: Add Dropdown View Profile*/}
           {showInbox && openInbox && (
             <button 
               className="flex w-full items-center justify-center text-white py-6 px-9 transition-colors hover:bg-[#1a1a1a] disabled:opacity-50"

@@ -132,4 +132,4 @@ const useInvites = (uid: string) => {
     return { invites, hasPending };
 }
 
-export default useInvites;
+export { useInvites };
