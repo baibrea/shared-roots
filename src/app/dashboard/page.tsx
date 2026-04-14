@@ -25,6 +25,7 @@ export default function Dashboard() {
 
   type FamilyMember = {
     name: string;
+    role: string;
   }
 
   // Declares User Information Variables
@@ -169,7 +170,7 @@ export default function Dashboard() {
           <div className="flex flex-row w-full h-2/3 gap-10">
             {/* Timeline */}
             <div className="bg-white w-1/2 min-w-0 rounded-2xl p-8 text-center text-black shadow-lg">
-              <p>Timeline stuff</p>
+              <p>Timeline</p>
             </div>
 
             {/* Family Tree */}
@@ -235,12 +236,27 @@ export default function Dashboard() {
                             </p>
 
                             <p className="text-left truncate">
-                              Admin
+                              {member.role.charAt(0).toUpperCase() + member.role.slice(1)}
                             </p>
 
-                            <div className="text-left whtiespace-nowrap">
+                            <div className="flex flex-row gap-2 text-left whitespace-nowrap">
                               <button>
-                                EditRemove
+                                <Image
+                                  src="edit-svgrepo-com.svg"
+                                  alt="Edit"
+                                  width={30}
+                                  height={30}
+                                  className="opacity-75 cursor-pointer"
+                                />
+                              </button>
+                              <button>
+                                <Image
+                                  src="close-1511-svgrepo-com.svg"
+                                  alt="Remove"
+                                  width={20}
+                                  height={20}
+                                  className="opacity-75 cursor-pointer"
+                                />
                               </button>
                             </div>
                           </div>
@@ -254,18 +270,13 @@ export default function Dashboard() {
                     </>
                   )}
                 </ul>
-
               </div>
-
             </div>
           </div>
         </div>
-
-        {/* Right side of the main area */}
-        {/* Family Tree */}
-        
       </main>
 
+      {/* Inbox Button */}
       {showInbox && (
         <Inbox 
           docRef={doc(db, "users", userID)}
@@ -288,6 +299,7 @@ export default function Dashboard() {
         />
       )}
 
+      {/* Form to create family */}
       {showCreateFamily && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center">
           <div className="bg-white p-6 rounded-xl w-96">

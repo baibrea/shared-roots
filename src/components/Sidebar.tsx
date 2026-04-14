@@ -64,7 +64,7 @@ export default function Sidebar({
               className="flex w-full items-center justify-center text-white py-6 px-9 transition-colors hover:bg-[#1a1a1a] disabled:opacity-50"
               onClick={async () => openInbox("pending")}
             >
-                <div className="relative flex-shrink-0">
+                <div className="relative shrink-0">
                     <Image
                     className="invert"
                     src="/mail-svgrepo-com.svg"
