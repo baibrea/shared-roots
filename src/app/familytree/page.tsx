@@ -95,9 +95,15 @@ export default function FamilyTreePage() {
         }
       }
       setIsLoading(false);
-
     });
-    return () => unsubscribe();
+    const fallback = setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
+
+    return () => {
+      clearTimeout(fallback);
+      unsubscribe();
+    };
   }, []);
 
   const filteredPeople = people.filter((p) => {
