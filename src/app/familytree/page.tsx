@@ -256,7 +256,7 @@ export default function FamilyTreePage() {
                       <div>
                         <img
                           src={p.avatar}
-                          className="w-32 h-32 mr-4"
+                          className="w-12 h-12 mr-4 rounded-full"
                         />
                       </div>
                     ) : (<User className="w-10 h-10 mr-4 text-gray-400" />)}
@@ -285,12 +285,12 @@ export default function FamilyTreePage() {
             <div className="text-center mb-8">
 
               <span className="relative">
-                <div className="py-30 bg-[#B5B5B5] rounded-2xl mb-4">
+                <div className="p-4 rounded-2xl mb-4">
                   {selectedPerson.avatar ? (
                     <img 
                       src={selectedPerson.avatar}
                       alt={`${selectedPerson.firstName} ${selectedPerson.lastName}`} 
-                      className="w-26 h-26 rounded-full object-cover mx-auto"
+                      className="w-50 h-50 rounded-2xl object-cover mx-auto"
                     />
                   ) : (
                     <div className="w-26 h-26 rounded-full bg-gray-300 mx-auto">image</div>
