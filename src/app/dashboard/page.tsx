@@ -223,7 +223,7 @@ export default function Dashboard() {
                   />
                 ) : (
                   <button
-                    className="w-1/3 min-w-40 max-w-60 py-3 px-5 text-left bg-white hover:bg-gray-100 rounded-md font-semibold text-black"
+                    className="w-1/3 min-w-40 max-w-60 py-3 px-5 text-left bg-gray-100 hover:bg-gray-200 rounded-md font-semibold text-black transition-all border-2 border-[#2c3224]"
                     onClick={() => setShowCreateFamily(true)}
                   >
                     + Create Family
@@ -353,14 +353,14 @@ export default function Dashboard() {
 
             <div className="flex justify-end gap-2">
               <button
-                className="px-4 py-2 bg-gray-300 rounded-md text-black"
+                className="px-4 py-2 bg-gray-300 hover:bg-gray-400 transition-all rounded-md text-black"
                 onClick={() => setShowCreateFamily(false)}
               >
                 Cancel
               </button>
 
               <button
-                className="px-4 py-2 bg-[#2c3224] text-white rounded-md"
+                className="px-4 py-2 bg-[#7b8b69] hover:bg-[#5e6e4b] transition-all text-white rounded-md"
                 onClick={async () => {
                   if (!newFamilyName) return;
 

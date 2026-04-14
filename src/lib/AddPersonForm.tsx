@@ -148,7 +148,7 @@ export default function AddPersonForm({
               disabled={!isFormValid}
               className={`flex-1 p-2 rounded-xl text-white ${
                 isFormValid
-                  ? "bg-[#698b6a] hover:bg-[#456646]"
+                  ? "bg-[#7b8b69] hover:bg-[#5e6e4b] transition-all"
                   : "bg-gray-400"
               }`}
             >
@@ -158,7 +158,7 @@ export default function AddPersonForm({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 p-2 rounded-xl bg-gray-200"
+              className="flex-1 p-2 rounded-xl bg-gray-200 hover:bg-gray-300 transition-all"
             >
               Cancel
             </button>

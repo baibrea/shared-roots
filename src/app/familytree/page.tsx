@@ -70,7 +70,6 @@ export default function FamilyTreePage() {
           setUserFamilies(families);
         }
       }
-
       setIsLoading(false);
 
     });
@@ -196,7 +195,7 @@ export default function FamilyTreePage() {
       </div>
 
       {/* Right Panel */}
-      <div className="w-1/4 flex flex-col overflow-y-auto p-10 bg-white text-black shadow-2xl">
+      <div className="w-1/4 flex flex-col overflow-y-auto px-8 py-4 bg-white text-black shadow-2xl">
         {/* UI when no family member is selected */}
         {!selectedPerson && (
           <div className="flex flex-col h-full">
@@ -254,15 +253,15 @@ export default function FamilyTreePage() {
             <div className="text-center mb-8">
 
               <span className="relative">
-                <div className="py-30 bg-[#B5B5B5] rounded-2xl mb-10">
+                <div className="py-30 bg-[#B5B5B5] rounded-2xl mb-4">
                   {selectedPerson.avatar ? (
                     <img 
                       src={selectedPerson.avatar}
                       alt={`${selectedPerson.firstName} ${selectedPerson.lastName}`} 
-                      className="w-32 h-32 rounded-full object-cover mx-auto"
+                      className="w-26 h-26 rounded-full object-cover mx-auto"
                     />
                   ) : (
-                    <div className="w-32 h-32 rounded-full bg-gray-300 mx-auto">image</div>
+                    <div className="w-26 h-26 rounded-full bg-gray-300 mx-auto">image</div>
                   )}
                 </div>
                 <button 
