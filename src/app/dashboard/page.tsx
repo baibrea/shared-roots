@@ -139,7 +139,7 @@ export default function Dashboard() {
     };
   }, [activeFamily]);
 
-  if (isLoading || showLoader) {
+  if (isLoading && showLoader) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#2c3224]">
         <div className="flex flex-col items-center gap-4">

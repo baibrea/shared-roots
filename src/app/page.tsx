@@ -14,6 +14,8 @@ export default function Home() {
     onAuthStateChanged(auth, (user) => {
         if (user) {
             router.push("/dashboard");
+        } else {
+            router.push("/login");
         }
     });
 

@@ -474,7 +474,7 @@ function Inner({ nodes: inNodes, edges: inEdges, onNodeClick, focusNodeId, focus
             }
             if (onRequestFit) onRequestFit();
           }}
-          className="px-6 py-3 bg-gray-800 text-white text-sm shadow rounded-md"
+          className="px-6 py-3 bg-gray-800 text-white text-sm shadow rounded-md hover:cursor-pointer"
         >
           Reset View
         </button>

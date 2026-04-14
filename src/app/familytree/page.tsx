@@ -59,7 +59,7 @@ export default function FamilyTreePage() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setShowLoader(false);
-    }, 600);
+    }, 800);
 
     return () => clearTimeout(timer);
   }, []);
@@ -152,7 +152,7 @@ export default function FamilyTreePage() {
     return age;
   }
 
-  if (isLoading || showLoader) {
+  if (isLoading && showLoader) {
     return (
       <div className="flex items-center justify-center min-h-screen bg-[#2c3224]">
         <div className="flex flex-col items-center gap-4">
@@ -228,10 +228,10 @@ export default function FamilyTreePage() {
       </div>
 
       {/* Right Panel */}
-      <div className="w-1/4 flex flex-col overflow-y-auto px-8 py-4 bg-white text-black shadow-2xl">
+      <div className="w-1/4 flex flex-col overflow-y-auto py-4 bg-white text-black shadow-2xl">
         {/* UI when no family member is selected */}
         {!selectedPerson && (
-          <div className="flex flex-col h-full">
+          <div className="flex flex-col h-full py-6 pl-8">
             <h2 className="text-xl font-bold mb-4">Directory</h2>
             {/* New Component Integrated Here */}
             <SearchBar 
@@ -260,7 +260,7 @@ export default function FamilyTreePage() {
 
         {/* UI when a family member is selected */}
         {selectedPerson && (
-          <div className="h-full">
+          <div className="h-full px-8">
             <button
               onClick={() => setSelectedPersonId(null)}
               className="mb-6 px-4 py-2 bg-[#2c3224] text-white rounded-2xl hover:bg-[#1a1a1a] cursor-pointer transition-all"
