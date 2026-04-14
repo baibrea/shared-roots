@@ -229,7 +229,7 @@ export default function FamilyTreePage() {
       </div>
 
       {/* Right Panel */}
-      <div className="w-1/4 flex flex-col overflow-y-auto py-4 bg-white text-black shadow-2xl">
+      <div className="w-3/10 flex flex-col overflow-y-auto py-4 bg-white text-black shadow-2xl">
         {/* UI when no family member is selected */}
         {!selectedPerson && (
           <div className="flex flex-col h-full py-6 pl-6">
@@ -285,7 +285,7 @@ export default function FamilyTreePage() {
             <div className="text-center mb-8">
 
               <span className="relative">
-                <div className="p-4 rounded-2xl mb-4">
+                <div className="p-4 rounded-2xl mb-4 flex items-center justify-center">
                   {selectedPerson.avatar ? (
                     <img 
                       src={selectedPerson.avatar}
@@ -293,7 +293,7 @@ export default function FamilyTreePage() {
                       className="w-50 h-50 rounded-2xl object-cover mx-auto"
                     />
                   ) : (
-                    <div className="w-26 h-26 rounded-full bg-gray-300 mx-auto">image</div>
+                    <User className="w-50 h-50 text-gray-400" />
                   )}
                 </div>
                 <button 
