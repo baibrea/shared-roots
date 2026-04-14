@@ -15,6 +15,7 @@ import FamilyDropdown from "@/components/FamilyDropdown";
 import Sidebar from "@/components/Sidebar";
 import { uploadMedia } from "@/lib/media";
 import MediaView from "@/components/MediaView";
+import Image from "next/image";
 
 export default function FamilyTreePage() {
   type Family = {
@@ -41,6 +42,18 @@ export default function FamilyTreePage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
 
+  // Loading
+  const [isLoading, setIsLoading] = useState(true);
+  const [showLoader, setShowLoader] = useState(true);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowLoader(false);
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
       
@@ -57,6 +70,8 @@ export default function FamilyTreePage() {
           setUserFamilies(families);
         }
       }
+
+      setIsLoading(false);
 
     });
     return () => unsubscribe();
@@ -106,6 +121,23 @@ export default function FamilyTreePage() {
     }
 
     return age;
+  }
+
+  if (isLoading || showLoader) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#2c3224]">
+        <div className="flex flex-col items-center gap-4">
+          <Image
+            src="tree-decidious-svgrepo-com.svg"
+            alt="Loading..."
+            width={60} 
+            height={60}
+            className="animate-pulse invert"
+          />
+          <p className="text-white text-lg">Loading your family tree...</p>
+        </div>
+      </div>
+    );
   }
 
   return (

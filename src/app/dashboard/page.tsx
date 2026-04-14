@@ -60,8 +60,20 @@ export default function Dashboard() {
   const [newFamilyName, setNewFamilyName] = useState("");
   const { activeFamily, setActiveFamily } = useFamily();
 
+  // Loading screen
+  const [isLoading, setIsLoading] = useState(true);
+  const [showLoader, setShowLoader] = useState(true);
+
   // Router for redirecting
   const router = useRouter();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowLoader(false);
+    }, 600);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -81,6 +93,8 @@ export default function Dashboard() {
               const families = data.families || [];
               setUserFamilies(families);
 
+              setIsLoading(false);
+
               // Check for pending invites
               const inboxAlert = onSnapshot(
                 query(collection(db, "users", user.uid, "inbox"), where("status", "==", "pending")),
@@ -93,6 +107,8 @@ export default function Dashboard() {
                 }
               );
               return () => inboxAlert();
+          } else {
+            setIsLoading(false);
           }
       }
     });
@@ -121,6 +137,23 @@ export default function Dashboard() {
       unsubscribeMembers();
     };
   }, [activeFamily]);
+
+  if (isLoading || showLoader) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-[#2c3224]">
+        <div className="flex flex-col items-center gap-4">
+          <Image
+            src="tree-decidious-svgrepo-com.svg"
+            alt="Loading..."
+            width={60} 
+            height={60}
+            className="animate-pulse invert"
+          />
+          <p className="text-white text-lg">Loading your dashboard...</p>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex min-h-screen font-sans">
