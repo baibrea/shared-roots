@@ -18,12 +18,12 @@ import ReactFlow, {
 } from "reactflow";
 import "reactflow/dist/style.css";
 
-// ─── Layout constants ──────────────────────────────────────────────────────────
-const NODE_W     = 130;   // person card width  (px)
-const NODE_H     = 130;   // person card height (px)
-const SPOUSE_GAP = 60;    // gap between two spouses in a pair
-const UNIT_GAP   = 60;    // gap between independent units in a row
-const ROW_GAP    = 160;   // vertical gap between generations
+// Layout Constants: Affects spacing and sizing of graph elements.
+const NODE_W     = 130;   // Node width  (px)
+const NODE_H     = 130;   // Node height (px)
+const SPOUSE_GAP = 60;    // Horizontal gap between spouses
+const UNIT_GAP   = 60;    // Horizontal gap between units (sibling groups or solo individuals within a generation)
+const ROW_GAP    = 160;   // Vertical gap between generations
 
 const hiddenHandle: React.CSSProperties = {
   opacity: 0,
@@ -33,7 +33,7 @@ const hiddenHandle: React.CSSProperties = {
   height: 1,
 };
 
-// ─── Custom node: visible person card ─────────────────────────────────────────
+// Person Node
 function PersonNode({ data }: NodeProps) {
   const { person, isActive, onSelect, onAdd } = data as {
     person: Person;
@@ -44,12 +44,13 @@ function PersonNode({ data }: NodeProps) {
 
   return (
     <div className="relative group" style={{ width: NODE_W, height: NODE_H }}>
-      {/* Structural handles — invisible, used only for edge routing */}
+      {/* Structural handles — hidden, just used for edge routing */}
       <Handle type="target" position={Position.Top}    id="top"    style={hiddenHandle} />
       <Handle type="source" position={Position.Bottom} id="bottom" style={hiddenHandle} />
       <Handle type="source" position={Position.Right}  id="right"  style={hiddenHandle} />
       <Handle type="target" position={Position.Left}   id="left"   style={hiddenHandle} />
 
+      {/* Card */}
       <div
         className={`
           w-full h-full rounded-xl shadow-sm border-2 transition-all duration-300
@@ -74,7 +75,8 @@ function PersonNode({ data }: NodeProps) {
           {person.firstName}<br />{person.lastName}
         </span>
       </div>
-
+      
+      {/* Add Button */}
       <button
         onClick={e => { e.stopPropagation(); onAdd(); }}
         className="
@@ -90,11 +92,7 @@ function PersonNode({ data }: NodeProps) {
   );
 }
 
-/**
- * Invisible 1×1 node placed at the exact midpoint between two spouses.
- * Child edges originate from its bottom handle, ensuring lines always
- * point to the correct couple — even when a person has multiple marriages.
- */
+// Midpoint "couple" node for routing edges between spouses and children.
 function CoupleNode() {
   return (
     <div style={{ width: 1, height: 1 }}>
@@ -103,14 +101,13 @@ function CoupleNode() {
   );
 }
 
-// Defined outside the component so React Flow never re-registers node types
 const nodeTypes = { personNode: PersonNode, coupleNode: CoupleNode };
 
-// ─── BFS: assign each visible person a generational level ─────────────────────
+// Breadth-First Search of family graph to assign generational levels, starting from the active person
 function getGenerationalLevels(
   activePerson: Person,
   allPeople: Person[],
-  maxDepth = 5
+  maxDepth = 10
 ): Record<number, Person[]> {
   const levels: Record<number, Person[]> = {};
   const visited = new Set<string>();
@@ -127,6 +124,7 @@ function getGenerationalLevels(
     (levels[level] ??= []).push(person);
     if (distance >= maxDepth) continue;
 
+    // Traverse through family relationships: parents (up), children (down), spouses (same level)
     [
       ...(person.parents  ?? []).map(pid => ({ id: pid, level: level - 1 })),
       ...(person.children ?? []).map(pid => ({ id: pid, level: level + 1 })),
@@ -141,7 +139,7 @@ function getGenerationalLevels(
   return levels;
 }
 
-// ─── Graph builder ─────────────────────────────────────────────────────────────
+// Graph Builder
 interface CoupleRecord {
   coupleId: string;
   p1Id: string;
@@ -160,53 +158,239 @@ function buildGraph(
   const levels    = getGenerationalLevels(activePerson, people, 10);
   const levelKeys = Object.keys(levels).map(Number).sort((a, b) => a - b);
 
-  const posMap:      Record<string, { x: number; y: number }> = {};
-  const couplesByKey: Record<string, CoupleRecord>            = {};
-  const layoutKeys: Record<string, string> = {};
+  const posMap:      Record<string, { x: number; y: number }> = {}; // Final positions for each person node
+  const couplesByKey: Record<string, CoupleRecord>            = {}; // Couple records for spouse pairs, keyed by sorted person IDs (e.g. "pid1--pid2")
+  const layoutKeys: Record<string, string> = {}; // Layout keys for stable positioning: "level:rowIndex:totalWidth:unitIndex:memberIndex"
 
-  // ── Pass 1: compute positions for every visible person ──────────────────────
+  // Pass 1: Compute Layout Positions for All Visible People
   levelKeys.forEach((level, rowIndex) => {
     const peopleInLevel = levels[level] ?? [];
 
-    // Build adjacency for spouse links within this level and compute connected components.
     const idToPerson = new Map(peopleInLevel.map(p => [p.id, p]));
-    const adj: Record<string, Set<string>> = {};
-    peopleInLevel.forEach(p => (adj[p.id] = new Set<string>()));
-    for (const p of peopleInLevel) {
-      for (const sid of p.spouses ?? []) {
-        if (!idToPerson.has(sid)) continue;
-        adj[p.id].add(sid);
-        adj[sid].add(p.id);
+    const sortedPeople = [...peopleInLevel].sort((a, b) => a.id.localeCompare(b.id));
+
+    // Build units of siblings (people with the same parents) using parent ID sets as keys. Solo individuals get their own unique key.
+    const getParentKey = (p: Person) => {
+      const parents = (p.parents ?? []).slice().sort();
+      return parents.length ? parents.join("|") : `solo:${p.id}`;
+    };
+
+    const unitsByKey: Record<string, Person[]> = {};
+    const personUnitKey: Record<string, string> = {};
+
+    // Initial grouping into units by shared parent sets (siblings together, solo individuals separate)
+    for (const p of sortedPeople) {
+      const key = getParentKey(p);
+      unitsByKey[key] = unitsByKey[key] ?? [];
+      unitsByKey[key].push(p);
+      personUnitKey[p.id] = key;
+    }
+
+    // Merge solo spouses into the units of their partners to keep couples together.
+    // This ensures couples always appear adjacent in the final layout.
+    const soloKeys = Object.keys(unitsByKey).filter(k => k.startsWith("solo:"));
+    for (const soloKey of soloKeys) {
+      const soloMembers = unitsByKey[soloKey] ?? [];
+      for (const solo of soloMembers) {
+        // Find which unit contains this solo person's spouse
+        for (const spouse of solo.spouses ?? []) {
+          const spouseUnitKey = personUnitKey[spouse];
+          if (spouseUnitKey && spouseUnitKey !== soloKey) {
+
+            // Merge solo into spouse's unit
+            unitsByKey[spouseUnitKey]!.push(solo);
+            personUnitKey[solo.id] = spouseUnitKey;
+
+            // Remove from solo unit
+            const idx = unitsByKey[soloKey]!.indexOf(solo);
+            if (idx > -1) unitsByKey[soloKey]!.splice(idx, 1);
+            break;
+          }
+        }
       }
     }
 
-    // Discover connected components (clusters) of spouses; each cluster becomes a layout unit.
-    const visited = new Set<string>();
-    const units: Person[][] = [];
-    const sortedPeople = [...peopleInLevel].sort((a, b) => a.id.localeCompare(b.id));
-    for (const p of sortedPeople) {
-      if (visited.has(p.id)) continue;
-      const compIds: string[] = [];
-      const q = [p.id];
-      visited.add(p.id);
+    // Remove empty units
+    for (const k of soloKeys) {
+      if ((unitsByKey[k] ?? []).length === 0) delete unitsByKey[k];
+    }
+
+    // Build adjacency between units (through marriages)
+    const unitAdj: Record<string, Set<string>> = {};
+    for (const k of Object.keys(unitsByKey)) unitAdj[k] = new Set<string>();
+    for (const p of peopleInLevel) {
+      const myKey = personUnitKey[p.id];
+      for (const sid of p.spouses ?? []) {
+        if (!idToPerson.has(sid)) continue;
+        const otherKey = personUnitKey[sid];
+        if (otherKey && otherKey !== myKey) {
+          unitAdj[myKey].add(otherKey);
+          unitAdj[otherKey].add(myKey);
+        }
+      }
+    }
+
+    // Find connected blocks of units to keep related units together
+    const unitVisited = new Set<string>();
+    const unitBlocks: string[][] = [];
+    const allUnitKeys = Object.keys(unitsByKey).sort();
+
+    for (const k of allUnitKeys) {
+      if (unitVisited.has(k)) continue;
+
+      const q = [k];
+      unitVisited.add(k);
+      const block: string[] = [];
+
       while (q.length) {
-        const id = q.shift()!;
-        compIds.push(id);
-        for (const nb of adj[id] ?? []) {
-          if (!visited.has(nb)) {
-            visited.add(nb);
+        const cur = q.shift()!;
+        block.push(cur);
+
+        for (const nb of unitAdj[cur] ?? []) {
+          if (!unitVisited.has(nb)) {
+            unitVisited.add(nb);
             q.push(nb);
           }
         }
       }
-      const compPersons = compIds.map(id => idToPerson.get(id)!).sort((a, b) => a.id.localeCompare(b.id));
-      units.push(compPersons);
+
+      unitBlocks.push(block);
     }
 
-    // Sort units deterministically
-    units.sort((a, b) => a[0].id.localeCompare(b[0].id));
+    // Compute parent-based X anchors for each unit: the average X of all parents with assigned positions.
+    // Units with left-leaning parents will be placed more to the left, and vice versa.
+    const unitAnchor: Record<string, number | undefined> = {};
+    for (const block of unitBlocks) {
+      for (const k of block) {
+        const members = unitsByKey[k] ?? [];
+        const parentXs: number[] = [];
+        for (const m of members) {
+          for (const pid of m.parents ?? []) {
+            const ppos = posMap[pid];
+            if (ppos) parentXs.push(ppos.x + NODE_W / 2);
+          }
+        }
+        if (parentXs.length > 0) {
+          unitAnchor[k] = parentXs.reduce((a, b) => a + b) / parentXs.length;
+        }
+      }
+    }
 
-    // Compute total width where each unit can be larger than two people
+    // Sort blocks left to right using anchor positions
+    const blocksByMinAnchor = unitBlocks.map(block => {
+      const anchors = block.map(k => unitAnchor[k]).filter(x => x !== undefined) as number[];
+      const minAnchor = anchors.length > 0 ? Math.min(...anchors) : Infinity;
+      return { block, minAnchor };
+    }).sort((a, b) => a.minAnchor - b.minAnchor);
+
+    const orderedUnitKeys: string[] = [];
+
+    for (const { block } of blocksByMinAnchor) {
+
+      // Split into anchored (has parent X) and anchorless units
+      const anchored = block.filter(k => unitAnchor[k] !== undefined)
+        .sort((a, b) => unitAnchor[a]! - unitAnchor[b]!);
+      const anchorless = block.filter(k => unitAnchor[k] === undefined);
+
+      // If all units have anchors, use that order directly
+      if (anchorless.length === 0) {
+        orderedUnitKeys.push(...anchored);
+        continue;
+      }
+
+      if (anchored.length === 0) {
+        // No parent anchors: use greedy leaf-based fallback
+        const degMap = Object.fromEntries(block.map(k => [k, unitAdj[k]?.size ?? 0]));
+        const leaves = block.filter(k => degMap[k] <= 1).sort();
+        const start = (leaves.length > 0 ? leaves : [...block].sort())[0];
+        const used = new Set<string>([start]);
+        const order = [start];
+        while (used.size < block.length) {
+          const last = order[order.length - 1];
+          const next = Array.from(unitAdj[last] ?? []).find(n => block.includes(n) && !used.has(n)) ??
+                       block.find(k => !used.has(k))!;
+          order.push(next);
+          used.add(next);
+        }
+        orderedUnitKeys.push(...order);
+        continue;
+      }
+
+      // Mixed: start with anchored in sorted order, then insert anchorless near neighbors
+      const ordered: string[] = [...anchored];
+      const remaining: string[] = [];
+
+      for (const k of anchorless) {
+        const neighAnchored = Array.from(unitAdj[k] ?? []).filter(n => anchored.includes(n));
+
+        if (neighAnchored.length > 0) {
+          // Insert near neighbor anchored units
+          const meanAnchor = neighAnchored.map(n => unitAnchor[n]!).reduce((a, b) => a + b) / neighAnchored.length;
+
+          let idx = ordered.findIndex(x => unitAnchor[x] !== undefined && unitAnchor[x]! > meanAnchor);
+          if (idx === -1) idx = ordered.length;
+
+          ordered.splice(idx, 0, k);
+        } else {
+          remaining.push(k);
+        }
+      }
+
+      // Place fully isolated units at extremes
+      remaining.sort((a, b) => (unitsByKey[a]?.length ?? 0) - (unitsByKey[b]?.length ?? 0));
+
+      const leftExtras: string[] = [];
+      const rightExtras: string[] = [];
+
+      for (let i = 0; i < remaining.length; i++) {
+        if (i % 2 === 0) leftExtras.unshift(remaining[i]);
+        else rightExtras.push(remaining[i]);
+      }
+
+      orderedUnitKeys.push(...leftExtras, ...ordered, ...rightExtras);
+    }
+
+    // Order members within each unit: spouses together, sorted by ID.
+    // Also compute layout keys for stable ordering across renders
+    const units: Person[][] = [];
+    for (let ui = 0; ui < orderedUnitKeys.length; ui++) {
+      const key = orderedUnitKeys[ui];
+      const leftKey = orderedUnitKeys[ui - 1];
+      const rightKey = orderedUnitKeys[ui + 1];
+
+      const members = [...unitsByKey[key]].sort((a, b) => a.id.localeCompare(b.id));
+
+      const leftArr: Person[] = [];
+      const rightArr: Person[] = [];
+      const middleArr: Person[] = [];
+      const otherArr: Person[] = [];
+
+      for (const m of members) {
+        const spouses = new Set(m.spouses ?? []);
+
+        const hasLeft = leftKey && [...spouses].some(sid => personUnitKey[sid] === leftKey);
+        const hasRight = rightKey && [...spouses].some(sid => personUnitKey[sid] === rightKey);
+        const hasOther = [...spouses].some(sid => {
+          const k = personUnitKey[sid];
+          return !!k && k !== key && k !== leftKey && k !== rightKey;
+        });
+
+        if (hasLeft && !hasRight) leftArr.push(m);
+        else if (hasRight && !hasLeft) rightArr.push(m);
+        else if (hasLeft && hasRight) middleArr.push(m);
+        else if (hasOther) otherArr.push(m);
+        else middleArr.push(m);
+      }
+
+      leftArr.sort((a, b) => a.id.localeCompare(b.id));
+      middleArr.sort((a, b) => a.id.localeCompare(b.id));
+      rightArr.sort((a, b) => a.id.localeCompare(b.id));
+      otherArr.sort((a, b) => a.id.localeCompare(b.id));
+
+      units.push([...leftArr, ...middleArr, ...rightArr, ...otherArr]);
+    }
+
+    // Compute total row width
     const totalWidth = units.reduce((sum, unit, i) => {
       const unitW = unit.length * NODE_W + Math.max(0, unit.length - 1) * SPOUSE_GAP;
       return sum + unitW + (i > 0 ? UNIT_GAP : 0);
@@ -222,14 +406,18 @@ function buildGraph(
         posMap[member.id] = { x, y };
         layoutKeys[member.id] = `${level}:${rowIndex}:${totalWidth}:${unitIndex}:${i}`;
       });
+
       const unitW = unit.length * NODE_W + Math.max(0, unit.length - 1) * SPOUSE_GAP;
       curX += unitW + UNIT_GAP;
     });
 
-    // Create couple records for every visible spouse-pair in this level (used for children routing)
+    // Build couple midpoint nodes for spouses in this level, keyed by sorted person ID pairs (e.g. "pid1--pid2")
     for (const p of peopleInLevel) {
       for (const spouseId of p.spouses ?? []) {
         if (!posMap[p.id] || !posMap[spouseId]) continue;
+        const spousePerson = people.find(x => x.id === spouseId);
+        if (!spousePerson || !(spousePerson.spouses ?? []).includes(p.id)) continue;
+
         const coupleKey = [p.id, spouseId].sort().join("--");
         if (couplesByKey[coupleKey]) continue;
         const midX = (posMap[p.id].x + posMap[spouseId].x) / 2 + NODE_W / 2;
@@ -246,7 +434,7 @@ function buildGraph(
     
   });
 
-  // ── Pass 2: build nodes ──────────────────────────────────────────────────────
+  // Pass 2: Build Nodes and Marriage Edges
   const nodes: Node[] = [];
   const edges: Edge[] = [];
 
@@ -294,14 +482,22 @@ function buildGraph(
     });
   }
 
-  // Dashed lines for additional marriages (e.g. second spouse not grouped together)
+  // Extra marriage lines for spouses that aren't connected through a couple node 
+  // (ex. multiple spouses in the same generation, or spouses in different generations where only one parent is visible).
   for (const [personId] of Object.entries(posMap)) {
     const person = people.find(p => p.id === personId);
     if (!person) continue;
+
     for (const spouseId of person.spouses ?? []) {
       if (!posMap[spouseId]) continue;
+
+      const spousePerson = people.find(x => x.id === spouseId);
+      // Only render extra marriage lines when the relationship is mutual
+      if (!spousePerson || !(spousePerson.spouses ?? []).includes(personId)) continue;
+
       const key = [personId, spouseId].sort().join("--");
       if (drawnMarriages.has(key)) continue;
+
       drawnMarriages.add(key);
 
       edges.push({
@@ -317,12 +513,13 @@ function buildGraph(
     }
   }
 
-  // ── Pass 3: parent-child edges ───────────────────────────────────────────────
-  // Collect all visible children and their visible parents, then draw one edge per child
+  // Pass 3: Parent to Child Edges
   const childToVisibleParents: Record<string, string[]> = {};
+
   for (const [childId] of Object.entries(posMap)) {
     const child = people.find(p => p.id === childId);
     const visibleParents = (child?.parents ?? []).filter(pid => posMap[pid]);
+
     if (visibleParents.length > 0) {
       childToVisibleParents[childId] = visibleParents;
     }
@@ -335,10 +532,9 @@ function buildGraph(
     drawnChildEdges.add(childId);
 
     // Find the best source for this child's edge.
-    // Prefer: couple nodes (exactly 2 parents who are married) > single visible parent.
     let bestSource: string | null = null;
 
-    // Check if there's exactly 2 visible parents and they're married to each other
+    // Prefer couple node if both parents exist and are married (i.e. have a couple node)
     if (parentIds.length === 2) {
       const coupleKey = parentIds.sort().join("--");
       const couple = couplesByKey[coupleKey];
@@ -369,19 +565,25 @@ function buildGraph(
   return { nodes, edges, posMap, layoutKeys };
 }
 
-// ─── Inner flow component (requires ReactFlowProvider context) ─────────────────
+// Inner Flow Component (Requires ReactFlowProvider Context)
 function Inner({ nodes: inNodes, edges: inEdges, onNodeClick, focusNodeId, focusZoom, onRequestFit }: { 
   nodes: Node[]; 
-  edges: Edge[]; 
+  edges: Edge[];
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   onNodeClick: (event: any, node: Node) => void;
   focusNodeId?: string | null;
   focusZoom?: number;
   onRequestFit?: () => void;
 }) {
+  // ReactFlow-managed state for nodes and edges, initialized from props and updated on layout changes
   const [rfNodes, setRfNodes, onNodesChange] = useNodesState(inNodes);
   const [rfEdges, setRfEdges, onEdgesChange] = useEdgesState(inEdges);
+
+  // View control helpers
   const { fitView, setCenter, setViewport } = useReactFlow();
+
+  // Ref to the container div for computing view transforms
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   // Sync whenever the computed layout changes
@@ -390,28 +592,31 @@ function Inner({ nodes: inNodes, edges: inEdges, onNodeClick, focusNodeId, focus
     setRfEdges(inEdges);
   }, [inNodes, inEdges, setRfNodes, setRfEdges]);
 
-  // Re-fit the view after each layout change (or focus a node when requested).
-  // Do NOT auto-clear focus; leaving `focusNodeId` set prevents automatic fitView
-  // so the view stays zoomed until the user requests a fit.
+  // Handle camera behavior (focus node OR fit view) whenever the layout or focus node changes
   useEffect(() => {
     const t = setTimeout(() => {
       if (focusNodeId) {
+        // Find node to focus
         const node = inNodes.find(n => n.id === focusNodeId);
         if (node) {
+
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const centerX = (node.position as any).x + NODE_W / 2;
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           const centerY = (node.position as any).y + NODE_H / 2;
+
+          // Default zoom if not provided by props
           const zoom = typeof focusZoom === "number" ? focusZoom : 1.15;
 
-          // If setViewport is available, compute the transform so the desired
-          // world coordinate (centerX, centerY) appears at the screen center
-          // with the requested zoom: translate = [w/2 - zoom*tx, h/2 - zoom*ty].
+          // If setViewport is available, use setViewport for smooth zooming and panning to the target node (newer API, more control)
           if (setViewport && containerRef.current) {
             const w = containerRef.current.clientWidth || window.innerWidth;
             const h = containerRef.current.clientHeight || window.innerHeight;
+
+            // Translate so node center is at the center of the view, then apply zoom
             const tx = w / 2 - zoom * centerX;
             const ty = h / 2 - zoom * centerY;
+
             try {
               // @ts-expect - runtime types may vary
               setViewport({ x: tx, y: ty, zoom }, { duration: 300 });
@@ -421,8 +626,7 @@ function Inner({ nodes: inNodes, edges: inEdges, onNodeClick, focusNodeId, focus
             return;
           }
 
-          // Fallback: try setCenter (older API). Note many versions ignore the
-          // zoom parameter; if so, the zoom may not change here.
+          // Fallback: try setCenter (older API, may not support zoom or smooth behavior)
           if (setCenter) {
             try {
               // @ts-expect-error - runtime types may vary
@@ -440,8 +644,10 @@ function Inner({ nodes: inNodes, edges: inEdges, onNodeClick, focusNodeId, focus
         }
       }
 
+      // Default to fitting the view to the whole graph if no focus node or if centering fails
       fitView({ padding: 0.25, duration: 300 });
-    }, 60);
+    }, 60); // Delay to process the new nodes and edges before trying to center/fit
+
     return () => clearTimeout(t);
   }, [inNodes, fitView, focusNodeId, focusZoom, setCenter]);
 
@@ -461,18 +667,20 @@ function Inner({ nodes: inNodes, edges: inEdges, onNodeClick, focusNodeId, focus
         maxZoom={2}
         proOptions={{ hideAttribution: true }}
       >
+        {/* Basic zoom/pan controls */}
         <Controls showInteractive={false} />
       </ReactFlow>
 
+      {/* Reset camera button */}
       <div style={{ position: "absolute", top: 8, right: 8, zIndex: 40 }}>
         <button
           onClick={() => {
             try {
-              fitView({ padding: 0.25, duration: 300 });
+              fitView({ padding: 0.25, duration: 300 }); // Reset to fit view on button click
             } catch (e) {
               // ignore
             }
-            if (onRequestFit) onRequestFit();
+            if (onRequestFit) onRequestFit(); // Clear focus node externally if needed
           }}
           className="px-6 py-3 bg-gray-800 text-white text-sm shadow rounded-md hover:cursor-pointer"
         >
@@ -483,7 +691,7 @@ function Inner({ nodes: inNodes, edges: inEdges, onNodeClick, focusNodeId, focus
   );
 }
 
-// ─── Public component ──────────────────────────────────────────────────────────
+// Public Component
 interface VisualGraphProps {
   people: Person[];
   activePerson: Person;
@@ -497,10 +705,11 @@ export default function VisualGraph({
   onSelect,
   onAddRelative,
 }: VisualGraphProps) {
-  // Stable callbacks that update when props change
+  // Stable memoized callbacks that update only when props change
   const stableSelect = useCallback((p: Person) => onSelect(p), [onSelect]);
   const stableAdd    = useCallback((p: Person) => onAddRelative(p), [onAddRelative]);
 
+  // Build the graph data (nodes, edges, positions) from the people data and active person (memoized)
   const graph = useMemo(
     () => buildGraph(people, activePerson, stableSelect, stableAdd),
     [people, activePerson, stableSelect, stableAdd]
@@ -510,8 +719,11 @@ export default function VisualGraph({
   const prevLayoutKeysRef = useRef<Record<string, string>>({});
   const prevPosRef = useRef<Record<string, { x: number; y: number }>>({});
 
+  // State for nodes and edges to be passed to ReactFlow, initialized from computed graph and updated on layout changes
   const [displayNodes, setDisplayNodes] = useState<Node[]>(() => graph.nodes);
   const [displayEdges, setDisplayEdges] = useState<Edge[]>(() => graph.edges);
+
+  // Node to focus on after layout changes
   const [focusNodeId, setFocusNodeId] = useState<string | null>(null);
 
   // Compute stable node positions in an effect so we can safely read/update refs
@@ -520,26 +732,32 @@ export default function VisualGraph({
 
     const newNodes = graph.nodes.map(n => {
       const key = graph.layoutKeys?.[n.id];
+
+      // If the node existed in the previous layout and has the same layout key, keep its previous position to minimize movement
       if (key && prevLayoutKeysRef.current[n.id] === key && prevPosRef.current[n.id]) {
         const pos = prevPosRef.current[n.id];
         finalPosMap[n.id] = pos;
         return { ...n, position: pos };
       }
 
+      // Else, use the new computed position from the graph layout
       finalPosMap[n.id] = n.position;
       return n;
     });
-
+    
+    // Update refs with the new layout keys and positions for the next render
     prevLayoutKeysRef.current = { ...(graph.layoutKeys || {}) };
     prevPosRef.current = finalPosMap;
 
+    // Push to ReactFlow state
     setDisplayNodes(newNodes);
     setDisplayEdges(graph.edges);
   }, [graph]);
 
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const handleNodeClick = useCallback((event: any, node: Node) => {
-    // Remember the clicked node so Inner can center+zoom on it after layout.
+    // Remember the clicked node so Inner can center+zoom on it after layout
     setFocusNodeId(node.id);
     if (node.data?.onSelect) {
       node.data.onSelect();
@@ -555,7 +773,7 @@ export default function VisualGraph({
           onNodeClick={handleNodeClick}
           focusNodeId={focusNodeId}
           focusZoom={1.15}
-          onRequestFit={() => setFocusNodeId(null)}
+          onRequestFit={() => setFocusNodeId(null)} // Clear focus on reset view
         />
       </div>
     </ReactFlowProvider>
