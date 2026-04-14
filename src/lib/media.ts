@@ -68,6 +68,7 @@ export async function uploadMedia(
     }
 }
 
+// Not used anywhere at the moment
 export async function deleteMedia(
     userId: string,
     familyID: string,

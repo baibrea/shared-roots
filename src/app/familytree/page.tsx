@@ -1,6 +1,6 @@
 "use client";
 
-import { act, use, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import AddPersonForm from "@/lib/AddPersonForm";
 import { usePeople } from "@/lib/PeopleContext";
 import { Person } from "@/types/person";
@@ -13,7 +13,6 @@ import { auth, db } from "@/lib/firebase";
 import { collection, doc, getDoc, onSnapshot, query, where } from "@firebase/firestore";
 import FamilyDropdown from "@/components/FamilyDropdown";
 import Sidebar from "@/components/Sidebar";
-import { uploadMedia } from "@/lib/media";
 import MediaView from "@/components/MediaView";
 import Inbox from "@/components/Inbox";
 
