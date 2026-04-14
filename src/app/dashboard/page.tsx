@@ -204,7 +204,9 @@ export default function Dashboard() {
           <div className="flex flex-row w-full h-2/3 gap-10">
             {/* Timeline */}
             <div className="bg-white w-1/2 min-w-0 rounded-2xl p-8 text-center text-black shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
-              <p>Timeline</p>
+                <Link href="/timeline" className="flex w-1/2 bg-[#2c3224] hover:bg-[#1a1a1a] text-white items-center justify-center gap-2 rounded-md px-5 py-4 transition-colors shadow-lg mx-auto">
+                    View Timeline
+                </Link>
             </div>
 
             {/* Family Tree */}
