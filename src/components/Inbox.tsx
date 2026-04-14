@@ -87,7 +87,7 @@ export default function Inbox({
                     <button
                         type="button"
                         onClick={() => onClose(pendingInvites.length > 0)}
-                        className="flex h-10 w-10 items-center bg-[#2c3224] justify-center rounded-full transition-colors hover:bg-[#71766B]"
+                        className="flex h-10 w-10 items-center bg-[#2c3224] justify-center rounded-full transition-colors hover:bg-[#1a1a1a]"
                     >
                         <Image 
                             className="invert"
@@ -101,7 +101,7 @@ export default function Inbox({
                 <hr></hr>
                 <div className="flex flex-row items-center gap-4">
                     <button
-                    className="flex h-12 w-full items-center text-white bg-[#2c3224] hover:bg-[#71766B] hover:text-black justify-center rounded-2xl px-5 transition-colors md:w-[158px]"
+                    className="flex h-12 w-full items-center text-white bg-[#7b8b69] hover:bg-[#5e6e4b] justify-center rounded-2xl px-5 transition-colors md:w-[158px]"
                     onClick={() => {
                         setInboxView("pending");
                         setSuccess(false);
@@ -111,7 +111,7 @@ export default function Inbox({
                     View Pending
                     </button>
                     <button
-                    className="flex h-12 w-full items-center text-white bg-[#2c3224] hover:bg-[#71766B] hover:text-black justify-center rounded-2xl px-5 transition-colors md:w-[158px]"
+                    className="flex h-12 w-full items-center text-white bg-[#7b8b69] hover:bg-[#5e6e4b] justify-center rounded-2xl px-5 transition-colors md:w-[158px]"
                     onClick={async () => {
                         try {
                             const accepted = await retrieveAccepted(uid);
@@ -127,7 +127,7 @@ export default function Inbox({
                     View Archived
                     </button>
                     <button
-                    className="flex h-12 w-full items-center text-white bg-[#2c3224] hover:bg-[#71766B] hover:text-black justify-center rounded-2xl px-5 transition-colors md:w-[158px]"
+                    className="flex h-12 w-full items-center text-white bg-[#7b8b69] hover:bg-[#5e6e4b] justify-center rounded-2xl px-5 transition-colors md:w-[158px]"
                     onClick={async () => {
                         try {
                             setInboxView("invite");

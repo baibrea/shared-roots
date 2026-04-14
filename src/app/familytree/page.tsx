@@ -214,7 +214,7 @@ export default function FamilyTreePage() {
           <div className="h-full">
             <button
               onClick={() => setSelectedPersonId(null)}
-              className="mb-6 px-4 py-2 bg-[#2c3224] text-white rounded-2xl hover:bg-[#3E4B2C] cursor-pointer"
+              className="mb-6 px-4 py-2 bg-[#2c3224] text-white rounded-2xl hover:bg-[#1a1a1a] cursor-pointer transition-all"
             >
               Back
             </button>
@@ -234,7 +234,7 @@ export default function FamilyTreePage() {
                   )}
                 </div>
                 <button 
-                  className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 rounded-full w-10 h-10 hover:bg-gray-300 cursor-pointer"
+                  className="absolute -top-1 -right-1 inline-flex items-center justify-center px-2 py-1 rounded-full w-10 h-10 hover:bg-gray-300 cursor-pointer transition-all"
                   onClick={() => setShowMediaWindow(true)}
                 >
                   <img src="/edit-svgrepo-com.svg" alt="Edit" />
@@ -297,7 +297,7 @@ export default function FamilyTreePage() {
             {/* Button to modify family member profile */}
             <button
               onClick={() => setEditingPerson(selectedPerson)}
-              className="mt-6 px-4 py-2 bg-[#2c3224] text-white rounded-2xl hover:bg-[#3E4B2C] cursor-pointer"
+              className="my-6 px-4 py-2 bg-[#2c3224] text-white rounded-2xl hover:bg-[#1a1a1a] cursor-pointer transition-all"
             >
               Edit {selectedPerson.firstName}
             </button>

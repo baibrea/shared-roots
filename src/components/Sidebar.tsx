@@ -25,12 +25,13 @@ export default function Sidebar({
     return (
       <aside className="flex flex-col min-h-screen items-center w-1/5 bg-[#2c3224] py-10">
         <div className="flex flex-col w-full items-center">
-          <Link href="/dashboard" className="mb-10">
+          <Link href="/dashboard" className="mb-10 flex flex-col items-center">
             <Image
-              src="/WebLogoImage.png"
+              className=""
+              src="color-tree-decidious-svgrepo-com.svg"
               alt="Next.js logo"
-              width={130}
-              height={20}
+              width={80}
+              height={15}
               priority
             />
             <Image

@@ -246,7 +246,7 @@ export default function Dashboard() {
                                   alt="Edit"
                                   width={30}
                                   height={30}
-                                  className="opacity-75 cursor-pointer"
+                                  className="opacity-75 cursor-pointer hover:opacity-90 transition-all"
                                 />
                               </button>
                               <button>
@@ -255,7 +255,7 @@ export default function Dashboard() {
                                   alt="Remove"
                                   width={20}
                                   height={20}
-                                  className="opacity-75 cursor-pointer"
+                                  className="opacity-75 cursor-pointer hover:opacity-90 transition-all"
                                 />
                               </button>
                             </div>
