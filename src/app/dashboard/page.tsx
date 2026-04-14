@@ -110,12 +110,15 @@ export default function Dashboard() {
           } else {
             setIsLoading(false);
           }
+      } else {
+          setActiveFamily(null);
+          setIsLoading(false);
       }
     });
 
     return () => unsubscribe();
 
-  }, []);
+  }, [setActiveFamily]);
 
   useEffect(() => {
     if (!activeFamily?.id) {
@@ -171,7 +174,7 @@ export default function Dashboard() {
       <main className="flex min-h-screen w-full flex-row gap-10 py-12 px-6 sm:px-10 lg:px-20 xl:px-36 bg-[#b9c4b9] sm:items-start">
         <div className="flex flex-col w-full h-full gap-10">
           {/* Top of the main area */}
-          <div className="flex flex-col w-full h-1/3 items-center bg-[#2c3224] p-8 rounded-2xl justify-center gap-6 text-center sm:items-start sm:text-left shadow-lg">
+          <div className="flex flex-col w-full h-1/3 items-center bg-[#2c3224] p-8 rounded-2xl justify-center gap-6 text-center sm:items-start sm:text-left shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
 
             {/*Greeting card*/}
             <div className="flex flex-row w-full justify-between items-center lg:flex-row">
@@ -202,12 +205,12 @@ export default function Dashboard() {
           {/* Bottom of main area */}
           <div className="flex flex-row w-full h-2/3 gap-10">
             {/* Timeline */}
-            <div className="bg-white w-1/2 min-w-0 rounded-2xl p-8 text-center text-black shadow-lg">
+            <div className="bg-white w-1/2 min-w-0 rounded-2xl p-8 text-center text-black shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
               <p>Timeline</p>
             </div>
 
             {/* Family Tree */}
-            <div className="flex flex-col w-1/2 min-w-0 h-full rounded-2xl gap-4 p-4 text-base bg-white shadow-lg">
+            <div className="flex flex-col w-1/2 min-w-0 h-full rounded-2xl gap-4 p-4 text-base bg-white shadow-[0_10px_30px_rgba(0,0,0,0.3)]">
               <div className="flex flex-row items-center justify-between w-full gap-4 flex-wrap">
                 
                 {userFamilies.length > 0 ? (
