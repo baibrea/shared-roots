@@ -297,9 +297,6 @@ export default function Dashboard() {
                         <Link href="/familytree" className="flex w-full bg-[#2c3224] hover:bg-[#1a1a1a] text-white items-center justify-center gap-2 rounded-md px-5 py-4 transition-colors shadow-lg whitespace-nowrap">
                             View Family Tree
                         </Link>
-                        <Link href="/timeline" className="flex w-full bg-[#2c3224] hover:bg-[#1a1a1a] text-white items-center justify-center gap-2 rounded-md px-5 py-4 transition-colors shadow-lg">
-                            View Timeline
-                        </Link>
                       </div>
                     </>
                   )}

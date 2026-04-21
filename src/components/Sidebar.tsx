@@ -63,10 +63,6 @@ export default function Sidebar({
           <Link href="/familytree" className="flex h-12 py-10 w-full items-center justify-center text-white transition-colors hover:bg-[#1a1a1a]">
             Family Tree
           </Link>
-
-          <Link href="/dashboard" className="flex h-12 py-10 w-full items-center justify-center text-white transition-colors hover:bg-[#1a1a1a]">
-            Timeline
-          </Link>
         </div>
 
 
