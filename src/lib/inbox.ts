@@ -31,7 +31,7 @@ export async function sendInvite(
     const userSnap = await getDocs(userDoc);
 
     if (userSnap.empty) {
-        throw new Error("No account is associted with the provided email.");
+        throw new Error("No account is associated with the provided email.");
     }
 
     // User information 
