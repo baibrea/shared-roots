@@ -19,6 +19,7 @@ afterAll(async () => {
     await signOut(auth);
 });
 
+// Family ID is coded into the UI so there is no worry for misinput
 describe('Send Invites', () => {
     it('Send an invite to non-existent user', async () => {
         await expect (sendInvite(
@@ -41,5 +42,18 @@ describe('Send Invites', () => {
             "inboxtest@gmail.com"
         );
         expect(inviteId).toBeDefined();
+    });
+});
+
+describe(' View Inbox Invitations', () => {
+    it ('Check pending invites', async () => {
+        // Check pending invites
+        const docSnap = await getDoc(doc(db, "users", auth.currentUser?.uid || "", "inbox", "IW0EAaYQId3eppTzApM7"));
+        expect(docSnap.exists()).toBe(true);
+    });
+
+    it ('Check accepted invites', async () => {
+        const acceptedDocSnap = await getDoc(doc(db, "users", auth.currentUser?.uid || "", "inbox", "FJner6bNPkmchm4SCOUe"));
+        expect(acceptedDocSnap.exists()).toBe(true);
     });
 });
