@@ -50,10 +50,20 @@ describe(' View Inbox Invitations', () => {
         // Check pending invites
         const docSnap = await getDoc(doc(db, "users", auth.currentUser?.uid || "", "inbox", "IW0EAaYQId3eppTzApM7"));
         expect(docSnap.exists()).toBe(true);
+
+        // Verify contents
+        expect(docSnap.data()?.status).toBe("pending");
+        expect(docSnap.data()?.message).toBe("Join my family!");
+        expect(docSnap.data()?.name).toBe("bre test");
     });
 
     it ('Check accepted invites', async () => {
         const acceptedDocSnap = await getDoc(doc(db, "users", auth.currentUser?.uid || "", "inbox", "FJner6bNPkmchm4SCOUe"));
         expect(acceptedDocSnap.exists()).toBe(true);
+
+        // Verify contents
+        expect(acceptedDocSnap.data()?.status).toBe("accepted");
+        expect(acceptedDocSnap.data()?.message).toBe("Join my family");
+        expect(acceptedDocSnap.data()?.name).toBe("John Doe");
     });
 });

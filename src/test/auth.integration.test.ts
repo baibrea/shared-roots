@@ -1,4 +1,4 @@
-// Test for login and registration functionality
+// Integration Tests for login and registration functionality
 import { loginUser, registerUser } from '../lib/auth'; 
 import { signOut } from "firebase/auth";
 import { auth, db } from '../lib/firebase';
