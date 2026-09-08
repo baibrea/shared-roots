@@ -1,5 +1,4 @@
 // Unit Tests for Login and Registration
-
 import { describe, it, expect } from '@jest/globals';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword } from 'firebase/auth';
 import { loginUser, registerUser } from '../lib/auth';
